@@ -1,0 +1,78 @@
+// Color Palette extracted from your UI image
+$color-text-dark: #0f172a;       // Deep black-navy color for titles
+$color-text-muted: #64748b;      // Muted slate gray for secondary details
+$color-status-bg: #090d16;       // Exact dark badge color seen on 'Sent'
+$color-status-text: #ffffff;
+$color-border-light: #f1f5f9;
+
+.custom-table-card {
+  border: 1px solid $color-border-light;
+  
+  // Custom Ant Design Table Overrides
+  .custom-antd-table {
+    .ant-table {
+      background: transparent;
+    }
+
+    // Header Styling
+    .ant-table-thead > tr > th {
+      background-color: transparent !important;
+      color: $color-text-muted !important;
+      font-weight: 500;
+      border-bottom: 1px solid $color-border-light;
+      
+      &::before {
+        display: none !important; // Removes AntD default vertical divider lines
+      }
+    }
+
+    // Row Body Styling
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid $color-border-light;
+      padding: 20px 16px; // Spacious layout matching your screenshot
+    }
+
+    // Hover Row Effect
+    .ant-table-tbody > tr:hover > td {
+      background: #f8fafc !important;
+    }
+  }
+}
+
+// Custom typography helpers
+.text-dark-custom {
+  color: $color-text-dark !important;
+}
+
+.text-muted-custom {
+  color: $color-text-muted !important;
+}
+
+// Dynamic Status Tags styling
+.status-tag {
+  border-radius: 20px;
+  padding: 4px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  text-align: center;
+  min-width: 70px;
+
+  &.tag-sent {
+    background-color: $color-status-bg !important;
+    color: $color-status-text !important;
+  }
+  
+  // Bonus states for dynamic functionality extensions
+  &.tag-pending {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+}
+
+// Responsive layout optimization for smaller screens
+@media (max-width: 768px) {
+  .custom-table-card {
+    padding: 1rem !important;
+  }
+}

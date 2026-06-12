@@ -1,0 +1,227 @@
+// Brand Theme Constants mapping token palettes
+$brand-purple-main: #8a2be2;
+$brand-light-gray-bg: #f9fafb;
+$border-color-split: #E5E7EB;
+$text-dark-navy: #111827;
+
+// Table Row Category Chips Tints
+$bg-sarees: #f5f0ff;
+$txt-sarees: #8a2be2;
+$bg-churidars: #fff0f6;
+$txt-churidars: #d4427b;
+$bg-jewellery: #f0f7ff;
+$txt-jewellery: #2b7ae2;
+
+.products-inventory-panel {
+  background-color: #fafbfe;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  .inventory-view-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: $text-dark-navy;
+  }
+
+  .inventory-view-desc {
+    font-size: 14px;
+  }
+
+  .add-product-btn-brand {
+    background-color: $brand-purple-main;
+    border-color: $brand-purple-main;
+    border-radius: 8px;
+    height: 40px;
+    font-weight: 600;
+
+    &:hover {
+      background-color: #7522c4 !important;
+      border-color: #7522c4 !important;
+    }
+  }
+
+  // Toolbar Element Configuration Box
+  .filter-controls-strip {
+    background: #ffffff;
+    border: 1px solid #edf0f5;
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+    border: 0.8px solid #E5E7EB !important;
+    border-radius: 12px;
+
+    .search-input-field {
+      max-width: 440px;
+      background-color: #f3f4f6;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+
+      .search-icon-muted {
+        color: #9ca3af;
+      }
+    }
+
+    .category-dropdown-select {
+      width: 160px;
+
+      .ant-select-selector {
+        border-radius: 8px !important;
+        border-color: #d1d5db !important;
+        height: 38px !important;
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    .more-filters-btn {
+      border-radius: 8px;
+      height: 38px;
+      border-color: #d1d5db;
+      font-weight: 500;
+      color: #374151;
+    }
+  }
+
+  // Structural Table Configuration Grid Rules
+  .table-card-wrapper {
+    border: 1px solid #edf0f5;
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+    border: 0.8px solid #E5E7EB !important;
+    border-radius: 12px;
+    overflow: hidden;
+
+    .custom-inventory-table {
+      .ant-table-thead>tr>th {
+        background-color: $brand-light-gray-bg !important;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        border-bottom: 1px solid $border-color-split;
+      }
+
+      .ant-table-tbody>tr>td {
+        border-bottom: 1px solid $border-color-split;
+        padding: 14px 16px;
+      }
+
+      // Internal row cell alignments mapping layout configurations
+      .product-info-cell {
+        .color-block-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
+          box-shadow: 0px 1px 3px 0px #0000001A !important;
+          border: 0.8px solid #E5E7EB !important;
+
+        }
+
+        .prod-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: $text-dark-navy;
+        }
+      }
+
+      // Category dynamic structural text chip sets
+      .category-tag {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+
+        &.tag-sarees {
+          background: $bg-sarees;
+          color: $txt-sarees;
+        }
+
+        &.tag-churidars {
+          background: $bg-churidars;
+          color: $txt-churidars;
+        }
+
+        &.tag-jewellery {
+          background: $bg-jewellery;
+          color: $txt-jewellery;
+        }
+      }
+
+      .price-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .stock-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #4b5563;
+
+        &.critical-alert {
+          color: #dc2626;
+          font-weight: 700;
+        }
+      }
+
+      // Dynamic Pill Overrides mapping design layout
+      .status-pill-tag {
+        border-radius: 6px;
+        border: none;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 10px;
+
+        &.active-pill {
+          background-color: #ecfdf5;
+          color: #10b981;
+        }
+
+        &.lowstock-pill {
+          background-color: #fef2f2;
+          color: #dc2626;
+        }
+      }
+
+      // Action row button structural corrections
+      .btn-edit-action {
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 13px;
+        border-color: #d1d5db;
+
+        &:hover {
+          border-color: $brand-purple-main;
+          color: $brand-purple-main;
+        }
+      }
+
+      .btn-more-dots {
+        color: #9ca3af;
+        font-size: 16px;
+      }
+
+      // Table Footer Controls Structuring
+      .ant-table-footer {
+        background-color: #ffffff !important;
+        border-top: 1px solid $border-color-split;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+      }
+
+      .footer-counter-lbl {
+        font-size: 13px;
+      }
+    }
+
+    // Ant Design Checkbox Brand Tinting
+    .ant-checkbox-checked .ant-checkbox-inner {
+      background-color: $brand-purple-main !important;
+      border-color: $brand-purple-main !important;
+    }
+
+    // Ant Design Toggle Switch Overrides
+    .custom-switch-toggle.ant-switch-checked {
+      background-color: #111827 !important;
+    }
+  }
+}

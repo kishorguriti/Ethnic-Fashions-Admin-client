@@ -1,0 +1,179 @@
+// Brand Theme Constants mapping exact dashboard style guidelines
+$color-border-subtle: #E5E7EB;
+$color-text-navy: #111827;
+$color-text-muted: #6b7280;
+
+// Segment Chip Token Tints
+$bg-vip: #7c3aed; 
+$bg-regular: #f3f4f6; $txt-regular: #4b5563;
+$bg-new-border: #2563eb;
+
+.customers-directory-module {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  // Filter Control Elements Toolbar Stylings
+  .toolbar-filter-strip {
+            box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+    .search-input-field {
+      max-width: 760px;
+      background-color: #f4f5f7;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      
+      .search-icon-dimmed { color: #9ca3af; }
+    }
+
+    .toolbar-action-btn {
+      border-radius: 8px;
+      height: 42px;
+      border-color: #d1d5db;
+      font-weight: 500;
+      color: #374151;
+      padding: 0 16px;
+
+      &:hover {
+        border-color: $bg-vip;
+        color: $bg-vip;
+      }
+    }
+  }
+
+  // Core Data Grid Section
+  .table-surface-card {
+    .custom-customers-data-table {
+      .ant-table-thead > tr > th {
+        background-color: #f8fafc !important; // Muted upper column bar from image
+        color: $color-text-muted;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        border-bottom: 1px solid $color-border-subtle;
+        padding: 14px 20px;
+      }
+
+      .ant-table-tbody > tr > td {
+        border-bottom: 1px solid $color-border-subtle;
+        padding: 18px 20px;
+        vertical-align: middle;
+      }
+
+      // Internal row cell alignments mapping layout configurations
+      .customer-meta-profile {
+        .avatar-initials-circle {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          font-size: 13px;
+          letter-spacing: 0.02em;
+        }
+
+        .cust-fullname-lbl {
+          font-size: 14px;
+          font-weight: 600;
+          color: $color-text-navy;
+        }
+        .cust-email-lbl { font-size: 12px; }
+      }
+
+      .contact-number-txt { font-size: 14px; font-weight: 500; }
+      .numeric-orders-lbl { font-size: 14px; color: #374151; }
+      .currency-spent-lbl { font-size: 14px; color: $color-text-navy; font-weight: 600; }
+      .last-order-date { font-size: 13px; font-weight: 500; }
+
+      // Dynamic Segment Pill styling configuration map blocks
+      .segment-pill {
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border: none;
+        text-align: center;
+        min-width: 54px;
+
+        &.tag-vip-purple {
+          background-color: $bg-vip;
+          color: #ffffff;
+        }
+
+        &.tag-regular-slate {
+          background-color: $bg-regular;
+          color: $txt-regular;
+        }
+
+        &.tag-new-outline-blue {
+          background-color: #ffffff;
+          color: $bg-new-border;
+          border: 1px solid rgba(37, 99, 235, 0.4);
+        }
+      }
+
+      // Action row control items layout properties
+      .btn-action-view {
+        border-radius: 6px;
+        border-color: #d1d5db;
+        font-weight: 600;
+        color: #374151;
+        height: 34px;
+        font-size: 13px;
+
+        &:hover {
+          border-color: $bg-vip !important;
+          color: $bg-vip !important;
+        }
+      }
+
+      .btn-more-dropdown-dots {
+        color: #9ca3af;
+        font-size: 16px;
+        &:hover { color: #111827 !important; }
+      }
+
+      // Footnote panel controls styling rules
+      .ant-table-footer {
+        background-color: #ffffff !important;
+        border-top: 1px solid $color-border-subtle;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+      }
+      .footer-counter-lbl { font-size: 13px; font-weight: 500; }
+
+      // Custom Edge Pagination structures overrides matching images look
+      .ant-pagination {
+        margin: 0 !important;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .pagination-edge-btn {
+          border-radius: 6px;
+          border-color: #d1d5db;
+          font-weight: 600;
+          color: #374151;
+          height: 32px;
+        }
+
+        .ant-pagination-item {
+          border-radius: 6px;
+          border-color: #d1d5db;
+          background-color: #ffffff;
+          
+          a {
+            color: #374151;
+            font-weight: 500;
+          }
+
+          &-active {
+            border-color: rgba(124, 58, 237, 0.5) !important;
+            background-color: rgba(124, 58, 237, 0.04) !important;
+            a { color: $bg-vip !important; font-weight: 700; }
+          }
+        }
+      }
+    }
+  }
+}

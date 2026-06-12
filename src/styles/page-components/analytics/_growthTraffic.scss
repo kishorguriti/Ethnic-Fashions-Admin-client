@@ -1,0 +1,107 @@
+// Layout Variable Palette Mappings
+$color-text-navy: #111827;
+$color-border-subtle: #E5E7EB;
+$brand-pink-fill: #cc00a3; // Vibrant matching accent color code from progress indicators
+
+// Performance Surface Tints & Text colors mapping image boxes
+$bg-green: #effaf3;  $txt-green: #11a75c;
+$bg-blue: #eff6ff;   $txt-blue: #2563eb;
+$bg-purple: #faf5ff; $txt-purple: #9333ea;
+
+.growth-traffic-panel {
+  background-color: #fafbfe;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  .main-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-text-navy;
+    letter-spacing: -0.01em;
+  }
+
+  // Dashboard content card panels setup
+  .dashboard-content-card {
+    // border: 1px solid $color-border-subtle;
+    border-radius: 14px;
+    // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+    border: 0.8px solid #E5E7EB !important;
+    .card-inner-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: $color-text-navy;
+    }
+
+    .chart-canvas-box {
+      height: 380px;
+      position: relative;
+      width: 100%;
+    }
+  }
+
+  // Traffic list row inner items metrics
+  .traffic-item-row {
+    background-color: #ffffff;
+    border: 1px solid #edf0f5;
+    
+    .source-name { font-size: 14px; font-weight: 600; }
+    .rate-text { font-size: 14px; font-weight: 700; }
+    
+    // Ant Design bar modifiers
+    .custom-pink-bar {
+      .ant-progress-inner {
+        border-radius: 4px !important;
+      }
+      .ant-progress-bg {
+        border-radius: 4px !important;
+      }
+    }
+  }
+
+  // Bottom Performance summary surface card configurations
+  .summary-telemetry-card {
+    border-radius: 16px;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+
+    .summary-lbl {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .summary-numeric {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .summary-footnote {
+      font-weight: 500;
+    }
+
+    // Dynamic style rules mapping color combinations directly to columns
+    &.surface-green {
+      background-color: $bg-green;
+      border-color: rgba(17, 167, 92, 0.05);
+      .summary-lbl { color: $txt-green; }
+      .summary-numeric { color: $txt-green; }
+      .summary-footnote { color: $txt-green; }
+    }
+
+    &.surface-blue {
+      background-color: $bg-blue;
+      border-color: rgba(37, 99, 233, 0.05);
+      .summary-lbl { color: #1e40af; }
+      .summary-numeric { color: #1e40af; }
+      .summary-footnote { color: #4b5563; } // Muted dark footnote text as per image
+    }
+
+    &.surface-purple {
+      background-color: $bg-purple;
+      border-color: rgba(147, 51, 234, 0.05);
+      .summary-lbl { color: $txt-purple; }
+      .summary-numeric { color: $txt-purple; }
+      .summary-footnote { color: $txt-purple; }
+    }
+  }
+}

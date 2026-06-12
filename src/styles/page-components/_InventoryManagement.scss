@@ -1,0 +1,224 @@
+// Brand Theme Constants mapping style palettes
+$brand-purple-glow: #8b00ff; // Rich primary purple code from header button
+$color-text-navy: #111827;
+$color-text-muted: #6b7280;
+$border-card-trim: #edf0f4;
+
+.inventory-management-dashboard {
+    background-color: #fcfdfe;
+    // min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    .main-section-heading {
+        font-size: 24px;
+        font-weight: 700;
+        color: $color-text-navy;
+        letter-spacing: -0.01em;
+    }
+
+    .sub-section-desc {
+        font-size: 14px;
+    }
+
+    // Action Header Button Setup
+    .bulk-update-brand-btn {
+        background-color: $brand-purple-glow;
+        border-color: $brand-purple-glow;
+        border-radius: 8px;
+        height: 40px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(139, 0, 255, 0.15);
+
+        &:hover,
+        &:focus {
+            background-color: #7200d4 !important;
+            border-color: #7200d4 !important;
+            color: #ffffff !important;
+        }
+    }
+
+    // Summary Metrics Surface Card blocks
+    .metric-kpi-surface-card {
+        background-color: #ffffff;
+        // border: 1px solid $border-card-trim;
+        border-radius: 12px;
+        // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+
+        .kpi-icon-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 20px;
+
+            &.bg-avatar-blue {
+                background-color: #eff6ff;
+                color: #2563eb;
+            }
+
+            &.bg-avatar-orange {
+                background-color: #fff7ed;
+                color: #ea580c;
+            }
+
+            &.bg-avatar-red {
+                background-color: #fef2f2;
+                color: #dc2626;
+            }
+        }
+
+        .kpi-lbl {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .kpi-numeric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: $color-text-navy;
+        }
+    }
+
+    // Filter Options Toolbar Strip Controls Configuration
+    .filter-controls-card {
+        background-color: #ffffff;
+        // border: 1px solid $border-card-trim;
+        border-radius: 12px;
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+
+        .search-input-field {
+            max-width: 420px;
+            background-color: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+
+            .search-icon-dimmed {
+                color: #9ca3af;
+            }
+        }
+
+        .toolbar-select-dropdown {
+            width: 150px;
+
+            .ant-select-selector {
+                border-radius: 8px !important;
+                border-color: #d1d5db !important;
+                height: 38px !important;
+                display: flex;
+                align-items: center;
+            }
+        }
+    }
+
+    // Main Core Inventory Data Table Formatting
+    .inventory-table-panel {
+        // border: 1px solid $border-card-trim;
+        border-radius: 14px;
+        overflow: hidden;
+        // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+
+        .custom-inventory-data-table {
+            // box-shadow: 0px 1px 3px 0px #0000001A !important;
+            // border: 0.8px solid #E5E7EB !important;
+
+            .ant-table-thead>tr>th {
+                background-color: #ffffff !important;
+                color: #4b5563;
+                font-size: 13px;
+                font-weight: 600;
+                border-bottom: 1px solid #E5E7EB;
+                padding: 16px;
+            }
+
+            .ant-table-tbody>tr>td {
+                border-bottom: 1px solid #E5E7EB;
+                padding: 18px 16px;
+                font-size: 14px;
+            }
+
+            // Internal cell layout mappings matching layout visual presentations
+            .product-title-bold {
+                font-weight: 600;
+                color: #111827;
+                display: block;
+                max-width: 200px;
+                line-height: 1.4;
+            }
+
+            .sku-code-label {
+                color: #4b5563;
+                font-weight: 500;
+            }
+
+            .category-text-label {
+                color: #111827;
+                font-weight: 500;
+            }
+
+            .stock-counter-badge {
+                background-color: #f3f4f6;
+                border-radius: 6px;
+                font-weight: 600;
+                color: #111827;
+                display: inline-block;
+            }
+
+            .alert-threshold-label {
+                color: #4b5563;
+                font-weight: 500;
+            }
+
+            // Custom matching Status capsule overlay tags from presentation images
+            .inventory-status-pill {
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 10px;
+
+                &.status-instock {
+                    background-color: #111827;
+                    color: #ffffff;
+                }
+
+                &.status-lowstock {
+                    background-color: #dc2626;
+                    color: #ffffff;
+                }
+
+                &.status-outofstock {
+                    background-color: #f3f4f6;
+                    color: #4b5563;
+                }
+            }
+
+            // Action row links text weights
+            .action-btn-update {
+                font-weight: 600;
+                color: #111827;
+                font-size: 13px;
+
+                &:hover {
+                    color: $brand-purple-glow !important;
+                }
+            }
+
+            .action-btn-history {
+                font-weight: 600;
+                color: #111827;
+                font-size: 13px;
+
+                &:hover {
+                    color: #3b82f6 !important;
+                }
+            }
+        }
+    }
+}

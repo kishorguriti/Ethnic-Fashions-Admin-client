@@ -1,0 +1,119 @@
+// System Design Variables
+$color-dark-main: #0f172a;
+$color-muted-main: #64748b;
+$color-purple-accent: #9333ea; // Purple color used across the new article action buttons
+$color-purple-hover: #7e22ce;
+$color-border-subtle: #E5E7EB;
+$color-tag-published-bg: #090d16;
+$color-tag-draft-bg: #f1f5f9;
+$color-delete-red: #dc2626;
+
+.article-manager {
+  // Global CTA Button
+  .btn-purple-primary {
+    background-color: $color-purple-accent !important;
+    border-color: $color-purple-accent !important;
+    border-radius: 8px;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 20px;
+
+    &:hover {
+      background-color: $color-purple-hover !important;
+      border-color: $color-purple-hover !important;
+    }
+  }
+
+  // Wrapper Shell Container Box
+  .table-card {
+    border: 1px solid $color-border-subtle;
+  }
+
+  // Core AntD Structural Adjustments overrides
+  .custom-article-table {
+    .ant-table {
+      background: transparent;
+    }
+
+    .ant-table-thead > tr > th {
+      background-color: transparent !important;
+      color: $color-muted-main !important;
+      font-weight: 500;
+      border-bottom: 1px solid $color-border-subtle;
+      
+      &::before {
+        display: none !important; // Removes AntD default vertical column dividers
+      }
+    }
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid $color-border-subtle;
+      padding: 20px 16px;
+      vertical-align: middle;
+    }
+
+    .ant-table-tbody > tr:last-child > td {
+      border-bottom: none !important;
+    }
+
+    // Custom Row Selection Styling helpers
+    .text-dark-custom {
+      color: $color-dark-main;
+    }
+    .text-muted-custom {
+      color: $color-muted-main;
+    }
+  }
+
+  // Status Badge Chips Style Matching
+  .article-status-tag {
+    border: none;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-weight: 600;
+    font-size: 13px;
+
+    &.tag-published {
+      background-color: $color-tag-published-bg !important;
+      color: #ffffff !important;
+    }
+
+    &.tag-draft {
+      background-color: $color-tag-draft-bg !important;
+      color: $color-dark-main !important;
+    }
+  }
+
+  // Row Controls Group Elements Layout structure
+  .actions-button-group {
+    .btn-action {
+      border: 1px solid #e2e8f0;
+      color: $color-dark-main;
+      font-weight: 500;
+      border-radius: 6px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+
+      &:hover {
+        color: $color-purple-accent !important;
+        border-color: $color-purple-accent !important;
+      }
+    }
+
+    .btn-delete {
+      color: $color-delete-red;
+      border-color: #fca5a5;
+      background-color: #fef2f2;
+      padding: 0 12px;
+
+      &:hover {
+        background-color: $color-delete-red !important;
+        color: #ffffff !important;
+        border-color: $color-delete-red !important;
+      }
+    }
+  }
+}

@@ -1,0 +1,160 @@
+// Brand Theme Constants mapping token configurations
+$brand-purple-id: #b800e6; // Vibrant purple matching order links
+$color-border-clean: #E5E7EB;
+
+// Payment Pill States
+$bg-paid: #eefbf4;
+$txt-paid: #10b981;
+$bg-pending-pay: #fff7ed;
+$txt-pending-pay: #f97316;
+
+// Order Flow Management States
+$bg-delivered: #111827;
+$txt-delivered: #ffffff;
+$bg-processing: #f3f4f6;
+$txt-processing: #4b5563;
+$bg-shipped: #eff6ff;
+$txt-shipped: #2563eb;
+$bg-pending: #dc2626;
+$txt-pending: #ffffff;
+$bg-cancelled: #f3f4f6;
+$txt-cancelled: #9ca3af;
+
+.orders-table-wrapper {
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    .custom-orders-data-grid {
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+
+        .ant-table-thead>tr>th {
+            background-color: #fafbfe !important;
+            color: #6b7280;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid $color-border-clean;
+            padding: 14px 20px;
+        }
+
+        .ant-table-tbody>tr>td {
+            border-bottom: 1px solid $color-border-clean;
+            padding: 20px;
+            vertical-align: middle;
+        }
+
+        // Dynamic split code view alignment
+        .order-id-cell-wrap {
+            color: $brand-purple-id;
+            font-size: 14px;
+            line-height: 1.3;
+            letter-spacing: 0.01em;
+        }
+
+        .customer-meta-cell {
+            .customer-name {
+                font-size: 14px;
+                color: #111827;
+            }
+
+            .customer-email {
+                font-size: 12px;
+            }
+        }
+
+        .date-cell {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .items-count-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        // Payment Tag Pill Blocks
+        .payment-pill-tag {
+            border: none;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 12px;
+
+            &.tag-paid {
+                background-color: $bg-paid;
+                color: $txt-paid;
+            }
+
+            &.tag-pending {
+                background-color: $bg-pending-pay;
+                color: $txt-pending-pay;
+            }
+        }
+
+        // Order Tracking Flow Tag Pill Blocks
+        .status-pill-tag {
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            text-align: center;
+            min-width: 90px;
+
+            &.state-delivered {
+                background-color: $bg-delivered;
+                color: $txt-delivered;
+            }
+
+            &.state-processing {
+                background-color: $bg-processing;
+                color: $txt-processing;
+            }
+
+            &.state-shipped {
+                background-color: $bg-shipped;
+                color: $txt-shipped;
+            }
+
+            &.state-pending {
+                background-color: $bg-pending;
+                color: $txt-pending;
+            }
+
+            &.state-cancelled {
+                background-color: $bg-cancelled;
+                color: $txt-cancelled;
+            }
+        }
+
+        .amount-label-text {
+            font-size: 15px;
+            letter-spacing: -0.01em;
+        }
+
+        // Inline Action buttons properties
+        .btn-action-view {
+            border-radius: 6px;
+            border-color: #d1d5db;
+            font-weight: 600;
+            color: #374151;
+            height: 32px;
+            font-size: 13px;
+
+            &:hover {
+                border-color: $brand-purple-id !important;
+                color: $brand-purple-id !important;
+            }
+        }
+
+        .btn-action-download {
+            color: #9ca3af;
+            font-size: 16px;
+
+            &:hover {
+                color: #111827 !important;
+            }
+        }
+    }
+}

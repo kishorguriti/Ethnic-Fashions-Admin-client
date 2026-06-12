@@ -1,0 +1,244 @@
+// Brand Theme Palettes Design Variables
+$color-text-navy: #111827;
+$color-border-subtle: #E5E7EB;
+
+// Status Accent Badge Colors
+$tint-green: #effaf3;
+$txt-green: #11a75c;
+$tint-blue: #eff6ff;
+$txt-blue: #2563eb;
+$tint-orange: #fff7ed;
+$txt-orange: #ea580c;
+$tint-red: #fef2f2;
+$txt-red: #dc2626;
+
+.revenue-payments-panel {
+  background-color: #fafbfe;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  .main-panel-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: $color-text-navy;
+    letter-spacing: -0.015em;
+  }
+
+  .sub-panel-desc {
+    font-size: 14px;
+  }
+
+  // Export Header Action Button Style
+  .export-report-btn {
+    border-radius: 8px;
+    border-color: #d1d5db;
+    color: #374151;
+    height: 38px;
+    font-size: 13px;
+    padding: 0 16px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    &:hover,
+    &:focus {
+      border-color: #9333ea !important;
+      color: #9333ea !important;
+    }
+  }
+
+  // Telemetry Summary Surface Card Elements
+  .telemetry-surface-card {
+    background-color: #ffffff;
+    border: 1px solid $color-border-subtle;
+    border-radius: 14px;
+    // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+    border: 0.8px solid #E5E7EB !important;
+
+    .icon-avatar-shell {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      font-size: 18px;
+
+      // Color maps corresponding to status keys from your image
+      &.shell-green {
+        background-color: $tint-green;
+        color: $txt-green;
+      }
+
+      &.shell-blue {
+        background-color: $tint-blue;
+        color: $txt-blue;
+      }
+
+      &.shell-orange {
+        background-color: $tint-orange;
+        color: $txt-orange;
+      }
+
+      &.shell-red {
+        background-color: $tint-red;
+        color: $txt-red;
+      }
+    }
+
+    .card-lbl {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .card-numeric-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.01em;
+    }
+
+    .card-trend-footnote {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+
+      &.trend-up-green {
+        color: $txt-green;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // Graphical Trend Container Cards
+  .chart-analytics-card {
+    border: 1px solid $color-border-subtle;
+    border-radius: 14px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+
+    .chart-inner-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: $color-text-navy;
+    }
+
+    .chart-canvas-box {
+      height: 340px;
+      position: relative;
+      width: 100%;
+    }
+  }
+}
+
+
+//////////// Recent Transactions And Refunds
+// Brand Theme Constants mapping style design image colors
+$brand-pink-link: #bd00e6; // Vibrant matching link color code from order ids
+$color-border-subtle: #E5E7EB;
+$color-text-navy: #111827;
+
+// Table Row Status Chips Tints
+$bg-success-black: #111827; // Solid dark badge fill from layout images
+$bg-pending-red: #dc2626; // Solid red pending fill from layout images
+$bg-processed-black: #111827; // Solid dark refund fill from layout images
+$bg-processing-gray: #f3f4f6; // Soft grey processing status chip
+
+.financial-ledgers-wrapper {
+  background-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  .ledger-surface-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+    border: 0.8px solid #E5E7EB !important;
+
+    .ledger-card-heading {
+      font-size: 16px;
+      font-weight: 700;
+      color: $color-text-navy;
+      letter-spacing: -0.01em;
+    }
+  }
+
+  // Core Data Grid Overrides Mappings
+  .custom-financial-table {
+    .ant-table-thead>tr>th {
+      background-color: #ffffff !important; // Clean white header row background strip
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 500;
+      border-bottom: 1px solid $color-border-subtle;
+      padding: 14px 16px;
+    }
+
+    .ant-table-tbody>tr>td {
+      border-bottom: 1px solid $color-border-subtle;
+      padding: 18px 16px;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    // Interactive order link parameters styling
+    .order-id-link {
+      color: $brand-pink-link;
+      cursor: pointer;
+      display: inline-block;
+      line-height: 1.3;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+
+      &:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+      }
+    }
+
+    .ledger-id-txt,
+    .ledger-date-txt,
+    .ledger-method-txt {
+      font-weight: 500;
+    }
+
+    .ledger-user-txt {
+      font-size: 14px;
+    }
+
+    // Dynamic Pill Tags mapping design presentation layout colors
+    .ledger-pill {
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      text-align: center;
+      min-width: 84px;
+
+      &.pill-success {
+        background-color: $bg-success-black;
+        color: #ffffff;
+      }
+
+      &.pill-pending {
+        background-color: $bg-pending-red;
+        color: #ffffff;
+      }
+
+      &.pill-processed {
+        background-color: $bg-processed-black;
+        color: #ffffff;
+      }
+
+      &.pill-processing {
+        background-color: $bg-processing-gray;
+        color: #4b5563;
+        font-weight: 600;
+      }
+    }
+
+    .ledger-amount {
+      font-size: 15px;
+      letter-spacing: -0.01em;
+
+      // Red styling overlay highlighting negative refund items
+      &.refund-negative {
+        color: #ef4444 !important; // Crimson highlight tone from design references
+      }
+    }
+  }
+}

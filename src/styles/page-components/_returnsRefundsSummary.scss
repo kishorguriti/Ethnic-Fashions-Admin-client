@@ -1,0 +1,290 @@
+// Custom layout brand style tokens matching image specs
+$color-text-navy: #0e1726;
+$color-border-subtle: #E5E7EB;
+
+// Exact color keys corresponding directly to your layout image
+$color-accent-orange: #ff5500; // Pending Returns accent
+$color-accent-blue: #0055ff; // Approved accent
+$color-accent-green: #11a75c; // Refunded accent
+$color-accent-black: #111827; // Total Refund Amount accent
+
+.returns-refunds-summary {
+    background-color: #fafbfe;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    .main-section-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: $color-text-navy;
+        letter-spacing: -0.015em;
+    }
+
+    .sub-section-desc {
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    // Individual KPI Summary Card Architecture Blocks
+    .kpi-surface-card {
+        background-color: #ffffff;
+        border: 1px solid $color-border-subtle;
+        border-radius: 14px;
+        // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+              box-shadow:0px 1px 3px 0px #0000001A !important;
+  border: 0.8px solid #E5E7EB !important;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        .kpi-card-title {
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: -0.005em;
+        }
+
+        .kpi-card-numeric {
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+
+            // Color mapping tokens matching each column palette from image
+            &.accent-orange {
+                color: $color-accent-orange;
+            }
+
+            &.accent-blue {
+                color: $color-accent-blue;
+            }
+
+            &.accent-green {
+                color: $color-accent-green;
+            }
+
+            &.accent-black {
+                color: $color-accent-black;
+            }
+        }
+
+        .kpi-card-subtext {
+            font-size: 12px;
+            font-weight: 500;
+        }
+    }
+}
+
+
+
+///////////// Table Styles
+// Brand Custom Design Tokens Mapping Palettes
+$brand-purple-id: #b800e6;
+$color-border-clean: #E5E7EB;
+
+// Strict layout status pill backgrounds matching image colors
+$bg-pending: #dc2626; // Solid red pill text wrapper
+$bg-approved: #111827; // Charcoal black approved pill wrapper
+$bg-refunded: #e5e7eb; // Muted soft grey pill wrapper
+$bg-rejected: #f3f4f6; // Light default asset tag frame wrapper
+$bg-processing: #f3f4f6; // Process layout background properties
+
+.returns-refunds-table-panel {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    // Filter toolbar configuration rules
+    .filter-toolbar {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+
+        .search-input-field {
+            max-width: 460px;
+            background-color: #f3f4f7;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+
+            .search-icon-dimmed {
+                color: #9ca3af;
+            }
+        }
+    }
+
+    // Core Data Grid Card Panel Layout Architecture
+    .table-card-surface {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+
+        .custom-returns-data-grid {
+            .ant-table-thead>tr>th {
+                background-color: #fdfdfd !important;
+                color: #4b5563;
+                font-size: 13px;
+                font-weight: 500;
+                border-bottom: 1px solid $color-border-clean;
+                padding: 16px;
+            }
+
+            .ant-table-tbody>tr>td {
+                border-bottom: 1px solid $color-border-clean;
+                padding: 18px 16px;
+                vertical-align: middle;
+                font-size: 14px;
+            }
+
+            // Explicit alignment mappings for fonts
+            .return-id-highlight {
+                color: $brand-purple-id;
+                font-size: 14px;
+            }
+
+            .order-id-txt,
+            .product-txt,
+            .reason-txt {
+                font-weight: 500;
+            }
+
+            .customer-txt,
+            .date-txt {
+                font-weight: 500;
+            }
+
+            // Dynamic custom tags rendering profiles matching image colors
+            .return-status-pill {
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 12px;
+                text-align: center;
+                min-width: 84px;
+
+                &.status-pill-pending {
+                    background-color: $bg-pending;
+                    color: #ffffff;
+                }
+
+                &.status-pill-approved {
+                    background-color: $bg-approved;
+                    color: #ffffff;
+                }
+
+                &.status-pill-refunded {
+                    background-color: $bg-refunded;
+                    color: #4b5563;
+                    font-weight: 600;
+                }
+
+                &.status-pill-rejected {
+                    background-color: $bg-rejected;
+                    color: #4b5563;
+                    font-weight: 600;
+                }
+
+                &.status-pill-processing {
+                    background-color: $bg-processing;
+                    color: #111827;
+                    font-weight: 600;
+                }
+            }
+
+            // Row Action Buttons customization specs
+            .btn-action-approve {
+                border-radius: 6px;
+                border-color: #d1d5db;
+                color: #16a34a;
+                font-weight: 600;
+                font-size: 13px;
+                height: 32px;
+
+                &:hover {
+                    border-color: #16a34a;
+                    background-color: #f0fdf4;
+                }
+            }
+
+            .btn-action-reject {
+                border-radius: 6px;
+                font-weight: 600;
+                font-size: 13px;
+                height: 32px;
+            }
+
+            .btn-action-process-refund {
+                border-radius: 6px;
+                border-color: #2563eb;
+                color: #2563eb;
+                font-weight: 600;
+                font-size: 13px;
+                height: 32px;
+
+                &:hover {
+                    background-color: #eff6ff !important;
+                    border-color: #2563eb !important;
+                    color: #2563eb !important;
+                }
+            }
+
+            .btn-action-view {
+                color: #9ca3af;
+                font-size: 16px;
+                width: 32px;
+                height: 32px;
+
+                &:hover {
+                    color: #111827 !important;
+                }
+            }
+
+            // Footer counter layer controls
+            .ant-table-footer {
+                background-color: #ffffff !important;
+                border-top: 1px solid $color-border-clean;
+                padding: 16px;
+                display: flex;
+                align-items: center;
+            }
+
+            .footer-counter-text {
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            // Custom Pagination Edge Controls Overrides matching image profile look
+            .ant-pagination {
+                margin: 0 !important;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                .pag-btn {
+                    border-radius: 6px;
+                    border-color: #d1d5db;
+                    font-weight: 600;
+                    color: #374151;
+                    height: 32px;
+                }
+
+                .ant-pagination-item {
+                    border-radius: 6px;
+                    border-color: #d1d5db;
+                    background-color: #ffffff;
+
+                    a {
+                        color: #374151;
+                        font-weight: 500;
+                    }
+
+                    &-active {
+                        border-color: rgba(184, 0, 230, 0.4) !important;
+                        background-color: rgba(184, 0, 230, 0.04) !important;
+
+                        a {
+                            color: $brand-purple-id !important;
+                            font-weight: 700;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

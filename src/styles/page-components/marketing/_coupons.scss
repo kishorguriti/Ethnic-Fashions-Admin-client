@@ -1,0 +1,218 @@
+// Custom layout brand style tokens matching image specs
+$brand-purple-vibrant: #8400ff; // Core purple accent tone from image buttons
+$color-text-navy: #111827;
+$color-text-subtle: #4b5563;
+$color-border-split: #E5E7EB;
+$color-input-bg-tint: #f3f4f6;
+
+.marketing-dashboard-extension {
+  background-color: #fafbfe;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  .main-dashboard-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: $color-text-navy;
+    letter-spacing: -0.015em;
+  }
+
+  .subtitle-desc {
+    font-size: 14px;
+  }
+
+  // Sub-navigation navigation element layout styles
+
+  // Upper Core Action Header Layout Element
+  .create-coupon-top-btn {
+    background-color: $brand-purple-vibrant;
+    border-color: $brand-purple-vibrant;
+    border-radius: 8px;
+    height: 40px;
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(132, 0, 255, 0.2);
+
+    &:hover,
+    &:focus {
+      background-color: #6a00cc !important;
+      border-color: #6a00cc !important;
+    }
+  }
+
+  // Coupons Database Table Card Section Wrapper Bounds
+  .coupons-table-card-wrapper {
+    border-radius: 14px;
+    overflow: hidden;
+    // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+    border: 0.8px solid #E5E7EB !important;
+
+    .custom-coupons-data-grid {
+      .ant-table-thead>tr>th {
+        background-color: #fcfdfe !important;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 500;
+        border-bottom: 1px solid $color-border-split;
+        padding: 16px 20px;
+      }
+
+      .ant-table-tbody>tr>td {
+        border-bottom: 1px solid $color-border-split;
+        padding: 18px 20px;
+        vertical-align: middle;
+      }
+
+      // Explicit internal font configurations matching column states
+      .coupon-code-lbl {
+        color: #9d00ff;
+        font-size: 14px;
+        letter-spacing: 0.02em;
+      }
+
+      .discount-value-lbl {
+        color: #111827;
+        font-size: 15px;
+      }
+
+      .type-label-text,
+      .usage-fraction,
+      .expiry-date-text {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      // Custom high-contrast status badges from reference image layout
+      .coupon-status-tag {
+        border: none;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 14px;
+        text-align: center;
+
+        &.status-pill-active {
+          background-color: #000000;
+          color: #ffffff;
+        }
+
+        &.status-pill-expired {
+          background-color: #f3f4f6;
+          color: #6b7280;
+          font-weight: 600;
+        }
+      }
+
+      // Inline Row Action Items Typography
+      .action-edit-btn {
+        color: #111827;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        padding: 4px 12px;
+        height: 32px;
+
+        &:hover {
+          border-color: $brand-purple-vibrant;
+          color: $brand-purple-vibrant;
+        }
+      }
+
+      .action-delete-btn {
+        color: #ef4444;
+        font-size: 14px;
+
+        &:hover {
+          color: #dc2626 !important;
+        }
+      }
+    }
+  }
+
+  // Quick Create Form Element Card Surface Styling Block
+  .quick-create-form-surface {
+    border-radius: 14px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+
+    .form-inner-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: $color-text-navy;
+    }
+
+    .ant-form-item-label>label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    // Custom background capsules overrides matching form layout look
+    .custom-form-field {
+      background-color: $color-input-bg-tint !important;
+      border: 1px solid transparent !important;
+      border-radius: 8px !important;
+      font-size: 14px;
+      padding: 10px 14px;
+      box-shadow: none !important;
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+
+      &:hover,
+      &:focus,
+      &-focused {
+        background-color: #ffffff !important;
+        border-color: $brand-purple-vibrant !important;
+      }
+    }
+
+    .custom-datepicker {
+      display: flex;
+      align-items: center;
+
+      .ant-picker-input>input {
+        background-color: transparent !important;
+      }
+    }
+
+    // Dynamic brand primary action handler configuration
+    .quick-create-submit-btn {
+      background-color: $brand-purple-vibrant;
+      border-color: $brand-purple-vibrant;
+      border-radius: 8px;
+      font-weight: 600;
+      height: 44px;
+      font-size: 14px;
+      padding: 0 20px;
+      box-shadow: 0 4px 12px rgba(132, 0, 255, 0.15);
+
+      &:hover,
+      &:focus {
+        background-color: #6a00cc !important;
+        border-color: #6a00cc !important;
+      }
+    }
+  }
+}
+
+.dashboard-subnav-strip {
+  background-color: #eaecef;
+  border-radius: 12px;
+  display: inline-flex;
+  width: fit-content !important;
+
+  .subnav-pill {
+    background-color: transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #374151;
+    transition: all 0.2s;
+
+    &.active {
+      background-color: #ffffff;
+      color: #000000;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+  }
+}

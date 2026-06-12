@@ -1,0 +1,112 @@
+// System Layout Tokens
+$color-dark-text: #0f172a;       // Title typography dark slate
+$color-muted-text: #64748b;      // Header descriptions text
+$color-purple-accent: #9333ea;   // Layout primary purple
+$color-purple-hover: #7e22ce;
+$color-border-line: #E5E7EB;     // Grid horizontal line breaks
+$color-tag-dark-bg: #090d16;     // Active published indicator badge fill color
+
+.static-pages-manager {
+  // Global Layout Header Button Actions Component
+  .btn-purple-primary {
+    background-color: $color-purple-accent !important;
+    border-color: $color-purple-accent !important;
+    border-radius: 8px;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 20px;
+
+    &:hover {
+      background-color: $color-purple-hover !important;
+      border-color: $color-purple-hover !important;
+    }
+  }
+
+  // Shell Wrap Panel Box Component
+  .table-card {
+    border: 1px solid $color-border-line;
+  }
+
+  // Internal AntD Framework Element Modifiers
+  .custom-pages-table {
+    .ant-table {
+      background: transparent;
+    }
+
+    // Header Element Column Matrix Labels Overrides
+    .ant-table-thead > tr > th {
+      background-color: transparent !important;
+      color: $color-muted-text !important;
+      font-weight: 500;
+      border-bottom: 1px solid $color-border-line;
+      
+      &::before {
+        display: none !important; // Eliminates standard framework vertical divider partitions
+      }
+    }
+
+    // Row Element Content Padding Layouts
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid $color-border-line;
+      padding: 20px 16px;
+      vertical-align: middle;
+    }
+
+    .ant-table-tbody > tr:last-child > td {
+      border-bottom: none !important;
+    }
+
+    // Utility Component Specific Colors
+    .text-dark-custom {
+      color: $color-dark-text;
+    }
+
+    .text-muted-custom {
+      color: $color-muted-text;
+    }
+
+    // Custom Slug Link text styling
+    .purple-slug-link {
+      color: $color-purple-accent;
+    }
+  }
+
+  // Status Badge Chips Style System Overrides
+  .page-status-tag {
+    border: none;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-weight: 600;
+    font-size: 13px;
+
+    &.tag-published {
+      background-color: $color-tag-dark-bg !important;
+      color: #ffffff !important;
+    }
+
+    &.tag-draft {
+      background-color: #e2e8f0 !important;
+      color: $color-dark-text !important;
+    }
+  }
+
+  // Row Controls Group Action Items Structure Layout Block
+  .actions-group-wrapper {
+    .btn-action {
+      border: 1px solid #e2e8f0;
+      color: $color-dark-text;
+      font-weight: 500;
+      border-radius: 6px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+
+      &:hover {
+        color: $color-purple-accent !important;
+        border-color: $color-purple-accent !important;
+      }
+    }
+  }
+}
