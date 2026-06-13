@@ -17,6 +17,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  PictureOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useNavigate } from "react-router-dom";
@@ -101,9 +102,18 @@ const ProductsTable: React.FC = () => {
       dataIndex: "name",
       key: "product",
       render: (_, record) => (
-        <div className="product-info-cell">
-          <h5 className="prod-title mb-0">{record.name}</h5>
-          {record.brand && <span className="text-muted small">{record.brand}</span>}
+        <div className="product-info-cell d-flex align-items-center gap-3">
+          {record.thumbnail ? (
+            <img src={record.thumbnail} alt={record.name} className="prod-thumb-img" />
+          ) : (
+            <div className="prod-thumb-placeholder d-flex align-items-center justify-content-center">
+              <PictureOutlined />
+            </div>
+          )}
+          <div className="prod-title-stack">
+            <h5 className="prod-title mb-0">{record.name}</h5>
+            {record.brand && <span className="text-muted small">{record.brand}</span>}
+          </div>
         </div>
       ),
     },
@@ -273,9 +283,16 @@ const ProductsTable: React.FC = () => {
           dataSource={filteredProducts}
           rowKey="_id"
           loading={loading}
+          scroll={{ x: "max-content" }}
           pagination={{
             position: ["bottomRight"],
             defaultPageSize: 10,
+            showSizeChanger: false,
+            itemRender: (_, type, originalElement) => {
+              if (type === "prev") return <Button size="small" className="pagination-edge-btn">Previous</Button>;
+              if (type === "next") return <Button size="small" className="pagination-edge-btn">Next</Button>;
+              return originalElement;
+            },
           }}
           className="custom-inventory-table"
           footer={() => (

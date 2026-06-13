@@ -347,6 +347,7 @@ const CategoriesManagement: React.FC = () => {
                 dataSource={categories}
                 rowKey="_id"
                 pagination={false}
+                scroll={{ x: "max-content" }}
                 className="custom-branding-table"
               />
             </div>

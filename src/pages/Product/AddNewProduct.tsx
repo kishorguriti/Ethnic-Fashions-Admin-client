@@ -294,45 +294,57 @@ const AddNewProduct: React.FC = () => {
       title: "Color",
       dataIndex: "color",
       key: "color",
+      width: 120,
     },
     {
       title: "Size",
       dataIndex: "size",
       key: "size",
+      width: 100,
       render: (size) => size || "Free Size",
     },
     {
       title: "SKU",
       dataIndex: "sku",
       key: "sku",
+      width: 140,
     },
     {
       title: "MRP",
       dataIndex: "mrp",
       key: "mrp",
+      width: 110,
+      align: "right",
       render: (mrp) => `₹${mrp.toLocaleString("en-IN")}`,
     },
     {
       title: "Selling Price",
       dataIndex: "sellingPrice",
       key: "sellingPrice",
+      width: 130,
+      align: "right",
       render: (price) => `₹${price.toLocaleString("en-IN")}`,
     },
     {
       title: "Discount",
       dataIndex: "discount",
       key: "discount",
+      width: 100,
+      align: "right",
       render: (discount) => `${discount}%`,
     },
     {
       title: "Stock",
       dataIndex: "stock",
       key: "stock",
+      width: 90,
+      align: "right",
     },
     {
       title: "Media",
       dataIndex: "media",
       key: "media",
+      width: 130,
       render: (media: ProductVariant["media"]) => (
         <div className="d-flex gap-1">
           {(media || []).slice(0, 3).map((m) => (
@@ -340,7 +352,7 @@ const AddNewProduct: React.FC = () => {
               key={m._id}
               src={m.url}
               alt="variant"
-              style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }}
+              className="variant-media-thumb"
             />
           ))}
         </div>
@@ -349,6 +361,7 @@ const AddNewProduct: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
+      width: 100,
       align: "right",
       render: (_, record) => (
         <div className="d-inline-flex gap-2">
@@ -534,7 +547,6 @@ const AddNewProduct: React.FC = () => {
                 </div>
               )}
             </div>
-
           </div>
 
           <div className="col-12 col-lg-4">

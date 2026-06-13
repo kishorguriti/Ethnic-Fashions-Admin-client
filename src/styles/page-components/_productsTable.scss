@@ -106,13 +106,33 @@ $txt-jewellery: #2b7ae2;
 
       // Internal row cell alignments mapping layout configurations
       .product-info-cell {
-        .color-block-avatar {
-          width: 40px;
-          height: 40px;
+        .color-block-avatar,
+        .prod-thumb-img,
+        .prod-thumb-placeholder {
+          width: 44px;
+          height: 44px;
           border-radius: 8px;
           box-shadow: 0px 1px 3px 0px #0000001A !important;
           border: 0.8px solid #E5E7EB !important;
+          flex-shrink: 0;
+        }
 
+        .prod-thumb-img {
+          object-fit: cover;
+          background-color: #f3f4f6;
+        }
+
+        .prod-thumb-placeholder {
+          background-color: $brand-light-gray-bg;
+          color: #9ca3af;
+          font-size: 18px;
+        }
+
+        .prod-title-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
         }
 
         .prod-title {

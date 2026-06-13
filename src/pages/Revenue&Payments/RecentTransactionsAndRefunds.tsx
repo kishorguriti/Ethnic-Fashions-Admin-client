@@ -253,6 +253,7 @@ const FinancialLedgers: React.FC = () => {
           columns={transactionColumns}
           dataSource={transactions}
           pagination={false}
+          scroll={{ x: "max-content" }}
           className="custom-financial-table"
           //   responsive={true}
         />
@@ -265,6 +266,7 @@ const FinancialLedgers: React.FC = () => {
           columns={refundColumns}
           dataSource={refunds}
           pagination={false}
+          scroll={{ x: "max-content" }}
           className="custom-financial-table"
           //   responsive={true}
         />

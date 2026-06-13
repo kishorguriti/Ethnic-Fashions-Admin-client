@@ -144,10 +144,11 @@ const OrdersTable: React.FC = () => {
 
   return (
     <div className="orders-table-wrapper bg-white shadow-sm rounded-3 mt-4">
-      <Table 
-        columns={columns} 
-        dataSource={orders} 
+      <Table
+        columns={columns}
+        dataSource={orders}
         pagination={false}
+        scroll={{ x: "max-content" }}
         className="custom-orders-data-grid"
         // responsive={true}
       />

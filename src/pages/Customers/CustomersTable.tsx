@@ -231,6 +231,7 @@ const CustomersDirectoryTable: React.FC = () => {
           dataSource={filteredCustomers}
           rowKey="_id"
           loading={loading}
+          scroll={{ x: "max-content" }}
           pagination={{
             position: ['bottomRight'],
             current: page,

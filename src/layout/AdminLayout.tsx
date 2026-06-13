@@ -11,6 +11,21 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 
+const pageTitleMap: Record<string, string> = {
+  products: "Products",
+  categories: "Categories",
+  orders: "Orders",
+  inventory: "Inventory Management",
+  customers: "Customers",
+  marketing: "Marketing",
+  "return-and-refunds": "Returns & Refunds",
+  "revenue-and-payments": "Revenue & Payments",
+  analytics: "Analytics",
+  settings: "Settings",
+  notifications: "Notifications",
+  "content-management": "Content Management",
+};
+
 const getPageTitle = (pathname: string): string => {
   if (pathname === "/products/add-new-product") return "Add New Product";
   if (pathname.startsWith("/products/edit/")) return "Edit Product";
@@ -18,9 +33,11 @@ const getPageTitle = (pathname: string): string => {
   const segments = pathname.split("/").filter(Boolean);
   if (segments.length === 0) return "Dashboard";
 
-  return segments[0]
-    .replaceAll("-", " ")
-    .replace(/^./, (c) => c.toUpperCase());
+  const segment = segments[0];
+  return (
+    pageTitleMap[segment] ||
+    segment.replaceAll("-", " ").replace(/^./, (c) => c.toUpperCase())
+  );
 };
 
 const Layout: React.FC = () => {
@@ -66,7 +83,9 @@ const Layout: React.FC = () => {
             >
               <MenuOutlined />
             </button>
-            <h2 className="page-heading mb-0">{getPageTitle(location.pathname)}</h2>
+            <h2 className="page-heading mb-0">
+              {getPageTitle(location?.pathname || "")}
+            </h2>
           </div>
 
           <div className="header-actions d-flex align-items-center gap-4">
