@@ -23,19 +23,15 @@
 
 import { Navigate, Outlet } from "react-router-dom";
 import { useAppSelector } from "../hooks";
-// import type { JSX } from "react";
 
-interface Props {
-  // children: JSX.Element;
-  role?: "admin" | "customer";
-}
+const ADMIN_ROLES = ["super_admin", "admin", "partner"];
 
-const ProtectedRoute = ({ role }: Props) => {
+const ProtectedRoute = () => {
   const user = useAppSelector((state) => state.auth.user);
 
   if (!user) return <Navigate to="/login" />;
 
-  if (role && user.role === role) {
+  if (ADMIN_ROLES.includes(user.role)) {
     return <Outlet />;
   }
 

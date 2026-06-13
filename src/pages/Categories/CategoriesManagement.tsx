@@ -1,90 +1,143 @@
-import React, { useState } from "react";
-import { Button, Table, Tag, Modal, Input, message } from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, Table, Tag, Switch, Modal, Alert, Empty, Spin, message } from "antd";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  RightOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import AddCategoryModal from "./AddCategoryModal";
-
-// TypeScript schema interfaces
-interface CategoryItem {
-  id: string;
-  name: string;
-  productCount: number;
-  subcategories: string[];
-  status: "Active" | "Inactive";
-}
+import {
+  getAdminCategories,
+  deleteCategory,
+  toggleCategoryStatus,
+  reorderCategory,
+  type Category,
+} from "../../services/categoryApi";
 
 const CategoriesManagement: React.FC = () => {
-  // Main dynamic state array tracking database structures matching the design layout
-  const [open, setModalOpen] = useState<boolean>(false);
-  const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const [categories, setCategories] = useState<CategoryItem[]>([
-    {
-      id: "1",
-      name: "Sarees",
-      productCount: 245,
-      subcategories: ["Banarasi", "Kanjivaram", "Paithani", "Silk", "Cotton"],
-      status: "Active",
-    },
-    {
-      id: "2",
-      name: "Churidars",
-      productCount: 182,
-      subcategories: ["Anarkali", "Straight", "Flared", "Designer"],
-      status: "Active",
-    },
-    {
-      id: "3",
-      name: "Jewellery",
-      productCount: 156,
-      subcategories: ["Necklaces", "Earrings", "Rings", "Bracelets", "Bangles"],
-      status: "Active",
-    },
-  ]);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [modalParentId, setModalParentId] = useState<string | null>(null);
+  const [modalParentName, setModalParentName] = useState<string | undefined>(undefined);
 
-  // Handle addition of a mock new subcategory on card triggers
-  const handleAddSubcategory = (catId: string) => {
-    setCategories((prev) =>
-      prev.map((cat) => {
-        if (cat.id === catId) {
-          const newSubName = prompt(`Enter new subcategory for ${cat.name}:`);
-          if (!newSubName?.trim()) return cat;
-          return {
-            ...cat,
-            subcategories: [...cat.subcategories, newSubName.trim()],
-          };
-        }
-        return cat;
-      }),
-    );
-    message.success("Subcategory appended successfully!");
+  const fetchCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getAdminCategories();
+      setCategories(res.data.data.categories);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message || "Failed to load categories.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Safe item deletion confirmation wrapper routine
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const handleOpenAddCategory = () => {
+    setEditingCategory(null);
+    setModalParentId(null);
+    setModalParentName(undefined);
+    setModalOpen(true);
+  };
+
+  const handleOpenAddSubcategory = (cat: Category) => {
+    setEditingCategory(null);
+    setModalParentId(cat._id);
+    setModalParentName(cat.name);
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (cat: Category, parentId: string | null) => {
+    setEditingCategory(cat);
+    setModalParentId(parentId);
+    setModalParentName(undefined);
+    setModalOpen(true);
+  };
+
+  const onClose = () => {
+    setModalOpen(false);
+  };
+
+  const onSuccess = () => {
+    setModalOpen(false);
+    fetchCategories();
+  };
+
   const handleDeleteCategory = (catId: string, name: string) => {
     Modal.confirm({
       title: `Are you sure you want to delete ${name}?`,
       icon: <ExclamationCircleOutlined className="text-danger" />,
       content:
-        "This will eliminate all associated subcategory nodes completely.",
+        "This will also remove all associated subcategories.",
       okText: "Yes, Delete",
       okType: "danger",
       cancelText: "Cancel",
-      onOk() {
-        setCategories((prev) => prev.filter((c) => c.id !== catId));
-        message.success(`${name} category removed.`);
+      onOk: async () => {
+        try {
+          const res = await deleteCategory(catId);
+          message.success(res.data.message);
+          fetchCategories();
+        } catch (err: any) {
+          message.error(
+            err?.response?.data?.message || "Failed to delete category.",
+          );
+        }
       },
     });
   };
 
-  // Ant Design Categories Table Column setup mapping image values
-  const tableColumns: ColumnsType<CategoryItem> = [
+  const handleToggleStatus = async (catId: string) => {
+    setTogglingId(catId);
+    try {
+      const res = await toggleCategoryStatus(catId);
+      message.success(res.data.message);
+      fetchCategories();
+    } catch (err: any) {
+      message.error(
+        err?.response?.data?.message || "Failed to update status.",
+      );
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= categories.length) return;
+
+    const current = categories[index];
+    const target = categories[targetIndex];
+
+    try {
+      await Promise.all([
+        reorderCategory(current._id, target.displayOrder),
+        reorderCategory(target._id, current.displayOrder),
+      ]);
+      fetchCategories();
+    } catch (err: any) {
+      message.error(
+        err?.response?.data?.message || "Failed to reorder categories.",
+      );
+    }
+  };
+
+  // Ant Design Categories Table Column setup
+  const tableColumns: ColumnsType<Category> = [
     {
       title: "Category",
       dataIndex: "name",
@@ -95,24 +148,48 @@ const CategoriesManagement: React.FC = () => {
       title: "Subcategories",
       dataIndex: "subcategories",
       key: "subcategories",
-      render: (subs: string[]) => (
+      render: (subs: Category[]) => (
         <span className="sub-count-txt">{subs.length} subcategories</span>
       ),
     },
     {
-      title: "Products",
-      dataIndex: "productCount",
-      key: "productCount",
-      render: (count) => <span className="product-count-txt">{count}</span>,
+      title: "Status",
+      dataIndex: "isActive",
+      key: "isActive",
+      render: (isActive: boolean, record) => (
+        <div className="d-flex align-items-center gap-2">
+          <Tag className={`status-badge-pill pill-${isActive ? "active" : "inactive"}`}>
+            {isActive ? "Active" : "Inactive"}
+          </Tag>
+          <Switch
+            size="small"
+            checked={isActive}
+            loading={togglingId === record._id}
+            onChange={() => handleToggleStatus(record._id)}
+          />
+        </div>
+      ),
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Tag className={`status-badge-pill pill-${status.toLowerCase()}`}>
-          {status}
-        </Tag>
+      title: "Order",
+      key: "order",
+      render: (_, record, index) => (
+        <div className="d-inline-flex gap-1">
+          <Button
+            type="text"
+            size="small"
+            icon={<ArrowUpOutlined />}
+            disabled={index === 0}
+            onClick={() => handleMove(index, "up")}
+          />
+          <Button
+            type="text"
+            size="small"
+            icon={<ArrowDownOutlined />}
+            disabled={index === categories.length - 1}
+            onClick={() => handleMove(index, "down")}
+          />
+        </div>
       ),
     },
     {
@@ -125,6 +202,7 @@ const CategoriesManagement: React.FC = () => {
             type="text"
             icon={<EditOutlined />}
             className="action-btn-edit"
+            onClick={() => handleOpenEdit(record, null)}
           >
             Edit
           </Button>
@@ -133,7 +211,7 @@ const CategoriesManagement: React.FC = () => {
             danger
             icon={<DeleteOutlined />}
             className="action-btn-delete"
-            onClick={() => handleDeleteCategory(record.id, record.name)}
+            onClick={() => handleDeleteCategory(record._id, record.name)}
           >
             Delete
           </Button>
@@ -142,16 +220,6 @@ const CategoriesManagement: React.FC = () => {
     },
   ];
 
-  const onClose = () => {
-    setModalOpen(false);
-  };
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-  const onSuccess = (data: any) => {
-    console.log(data, " Successfully Created ");
-    setModalOpen(false);
-  };
   return (
     <>
       <div className="categories-management-wrapper container-fluid p-4">
@@ -167,86 +235,132 @@ const CategoriesManagement: React.FC = () => {
             type="primary"
             icon={<PlusOutlined />}
             className="add-category-brand-btn"
-            onClick={() => handleOpenModal()}
+            onClick={handleOpenAddCategory}
           >
             Add Category
           </Button>
         </div>
 
-        {/* Grid Block View: Upper Flex Card Groups */}
-        <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
-          {categories.map((cat) => (
-            <div className="col" key={cat.id}>
-              <div className="category-structure-card h-100 p-4">
-                {/* Card Header Strip with context settings buttons */}
-                <div className="card-top-header d-flex justify-content-between align-items-start mb-2">
-                  <div>
-                    <h3 className="card-cat-title mb-1">{cat.name}</h3>
-                    <span className="card-cat-count text-muted">
-                      {cat.productCount} products
-                    </span>
-                  </div>
-                  <div className="header-icon-actions d-flex gap-2">
-                    <Button
-                      type="text"
-                      icon={<EditOutlined className="icon-muted" />}
-                      size="small"
-                    />
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      size="small"
-                      onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                    />
-                  </div>
-                </div>
-
-                {/* Subcategories Vertical List Segment Stack */}
-                <div className="subcategories-list-area mt-3">
-                  <span className="sub-lbl-title mb-2 d-block">
-                    Subcategories:
-                  </span>
-                  <div className="sub-items-group d-flex flex-column gap-2 mb-3">
-                    {cat.subcategories.map((sub, index) => (
-                      <div
-                        key={index}
-                        className="sub-row-item d-flex justify-content-between align-items-center px-3 py-2"
-                      >
-                        <span className="sub-name-lbl">{sub}</span>
-                        <RightOutlined className="chevron-icon-muted" />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Subcategory interactive addition handler button link */}
-                  <Button
-                    type="dashed"
-                    icon={<PlusOutlined />}
-                    className="add-sub-dashed-btn w-100 d-flex align-items-center justify-content-center"
-                    onClick={() => handleAddSubcategory(cat.id)}
-                  >
-                    Add Subcategory
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Table Section Block View: Category Details Area Layout */}
-        <div className="category-details-table-card p-4 bg-white">
-          <h4 className="table-inner-heading mb-4">Category Details</h4>
-          <Table
-            columns={tableColumns}
-            dataSource={categories}
-            rowKey="id"
-            pagination={false}
-            className="custom-branding-table"
+        {error && (
+          <Alert
+            type="error"
+            message={error}
+            showIcon
+            className="mb-4"
+            action={
+              <Button size="small" onClick={fetchCategories}>
+                Retry
+              </Button>
+            }
           />
-        </div>
+        )}
+
+        {loading ? (
+          <div className="d-flex justify-content-center py-5">
+            <Spin size="large" />
+          </div>
+        ) : categories.length === 0 ? (
+          !error && <Empty description="No categories found" className="py-5" />
+        ) : (
+          <>
+            {/* Grid Block View: Upper Flex Card Groups */}
+            <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
+              {categories.map((cat) => (
+                <div className="col" key={cat._id}>
+                  <div className="category-structure-card h-100 p-4">
+                    {/* Card Header Strip with context settings buttons */}
+                    <div className="card-top-header d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h3 className="card-cat-title mb-1">{cat.name}</h3>
+                        <span className="card-cat-count text-muted">
+                          {cat.subcategories.length} subcategories
+                        </span>
+                      </div>
+                      <div className="header-icon-actions d-flex gap-2">
+                        <Button
+                          type="text"
+                          icon={<EditOutlined className="icon-muted" />}
+                          size="small"
+                          onClick={() => handleOpenEdit(cat, null)}
+                        />
+                        <Button
+                          type="text"
+                          danger
+                          icon={<DeleteOutlined />}
+                          size="small"
+                          onClick={() => handleDeleteCategory(cat._id, cat.name)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Subcategories Vertical List Segment Stack */}
+                    <div className="subcategories-list-area mt-3">
+                      <span className="sub-lbl-title mb-2 d-block">
+                        Subcategories:
+                      </span>
+                      <div className="sub-items-group d-flex flex-column gap-2 mb-3">
+                        {cat.subcategories.map((sub) => (
+                          <div
+                            key={sub._id}
+                            className="sub-row-item d-flex justify-content-between align-items-center px-3 py-2"
+                          >
+                            <span className="sub-name-lbl">{sub.name}</span>
+                            <div className="d-inline-flex gap-1">
+                              <Button
+                                type="text"
+                                size="small"
+                                icon={<EditOutlined className="icon-muted" />}
+                                onClick={() => handleOpenEdit(sub, cat._id)}
+                              />
+                              <Button
+                                type="text"
+                                danger
+                                size="small"
+                                icon={<DeleteOutlined />}
+                                onClick={() => handleDeleteCategory(sub._id, sub.name)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Subcategory interactive addition handler button link */}
+                      <Button
+                        type="dashed"
+                        icon={<PlusOutlined />}
+                        className="add-sub-dashed-btn w-100 d-flex align-items-center justify-content-center"
+                        onClick={() => handleOpenAddSubcategory(cat)}
+                      >
+                        Add Subcategory
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Table Section Block View: Category Details Area Layout */}
+            <div className="category-details-table-card p-4 bg-white">
+              <h4 className="table-inner-heading mb-4">Category Details</h4>
+              <Table
+                columns={tableColumns}
+                dataSource={categories}
+                rowKey="_id"
+                pagination={false}
+                className="custom-branding-table"
+              />
+            </div>
+          </>
+        )}
       </div>
-      <AddCategoryModal open={open} onClose={onClose} onSuccess={onSuccess} />
+      <AddCategoryModal
+        open={modalOpen}
+        onClose={onClose}
+        onSuccess={onSuccess}
+        editingCategory={editingCategory}
+        parentId={modalParentId}
+        parentName={modalParentName}
+      />
     </>
   );
 };

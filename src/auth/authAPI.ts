@@ -1,8 +1,22 @@
-import axios from "axios";
+import axiosInstance from "../services/axiosInstance";
+import type {
+  LoginPayload,
+  LoginResponse,
+  OtpRequiredResponse,
+  VerifyOtpPayload,
+} from "./types";
 
-const API = axios.create({
-  baseURL: "https://your-api.com", // replace later
-});
+// Step 1 — credentials, returns an OTP-sent response (no session yet)
+export const loginAPI = (data: LoginPayload) =>
+  axiosInstance.post<OtpRequiredResponse>("/admin/login", data);
 
-export const loginAPI = (data: { email: string; password: string }) =>
-  API.post("/login", data);
+// Step 2 — verify OTP, completes login and sets auth cookies
+export const verifyLoginOtpAPI = (data: VerifyOtpPayload) =>
+  axiosInstance.post<LoginResponse>("/admin/login/verify-otp", data);
+
+export const resendLoginOtpAPI = (email: string) =>
+  axiosInstance.post<OtpRequiredResponse>("/admin/login/resend-otp", {
+    email,
+  });
+
+export const logoutAPI = () => axiosInstance.post("/auth/logout");

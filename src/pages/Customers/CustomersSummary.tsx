@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, message } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import CustomersDirectoryTable from "./CustomersTable";
+import { getCustomerStats, type CustomerStats } from "../../services/customerApi";
 
 // TypeScript schema defining dynamic KPI layout cards data structures
 interface CustomerMetric {
@@ -14,35 +15,47 @@ interface CustomerMetric {
 
 const CustomersSummary: React.FC = () => {
   const [campaignLoading, setCampaignLoading] = useState<boolean>(false);
+  const [stats, setStats] = useState<CustomerStats | null>(null);
 
-  // Dynamic values extracted exactly from your design image reference
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await getCustomerStats();
+        setStats(res.data.data);
+      } catch {
+        message.error("Failed to load customer statistics.");
+      }
+    };
+    fetchStats();
+  }, []);
+
   const metrics: CustomerMetric[] = [
     {
       id: 1,
       title: "Total Customers",
-      value: "3,842",
-      subText: "+24 this week",
+      value: stats ? stats.totalCustomers.toLocaleString("en-IN") : "—",
+      subText: "All registered customers",
       themeClass: "theme-black",
     },
     {
       id: 2,
-      title: "VIP Customers",
-      value: "284",
-      subText: "Top spenders",
-      themeClass: "theme-purple",
-    },
-    {
-      id: 3,
       title: "New This Month",
-      value: "156",
-      subText: "+18% vs last month",
+      value: stats ? stats.newThisMonth.toLocaleString("en-IN") : "—",
+      subText: "Registered this month",
       themeClass: "theme-blue",
     },
     {
+      id: 3,
+      title: "Verified Customers",
+      value: stats ? stats.verifiedCustomers.toLocaleString("en-IN") : "—",
+      subText: "Phone number verified",
+      themeClass: "theme-purple",
+    },
+    {
       id: 4,
-      title: "Average Order Value",
-      value: "₹4,280",
-      subText: "Per customer",
+      title: "Saved Addresses",
+      value: stats ? stats.withSavedAddress.toLocaleString("en-IN") : "—",
+      subText: "Customers with an address on file",
       themeClass: "theme-green",
     },
   ];
@@ -96,11 +109,7 @@ const CustomersSummary: React.FC = () => {
                 </h2>
               </div>
               <div className="card-bottom">
-                <span
-                  className={`kpi-card-subtext ${card.id === 1 ? "highlight-trend-up" : ""}`}
-                >
-                  {card.subText}
-                </span>
+                <span className="kpi-card-subtext">{card.subText}</span>
               </div>
             </div>
           </div>

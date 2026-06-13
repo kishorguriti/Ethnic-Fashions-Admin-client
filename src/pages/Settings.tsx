@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Upload, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import type { UploadFile, UploadProps } from 'antd';
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
+import { getStoreSettings, updateStoreSettings, type StoreSettings as StoreSettingsType } from '../services/adminApi';
+import { uploadImageAsset } from '../services/assetApi';
 
-// TypeScript schema defining dynamic state parameters for the settings form
 interface StoreSettingsFormValues {
   storeName: string;
   tagline?: string;
@@ -15,31 +16,64 @@ interface StoreSettingsFormValues {
 const StoreSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('General');
   const [loading, setLoading] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [form] = Form.useForm<StoreSettingsFormValues>();
-  
-  // Local asset selection state tracker for custom store logo previewing mechanics
-  const [logoFile, setLogoFile] = useState<UploadFile[]>([]);
-  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string>('');
 
-  const handleLogoChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
-    setLogoFile(newFileList);
-    if (newFileList.length > 0 && newFileList[0].originFileObj) {
-      const targetUrl = URL.createObjectURL(newFileList[0].originFileObj);
-      setLogoPreviewUrl(targetUrl);
-    } else {
-      setLogoPreviewUrl('');
+  const [logoUrl, setLogoUrl] = useState<string>('');
+  const [logoUploading, setLogoUploading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await getStoreSettings();
+        const settings = res.data.data;
+        form.setFieldsValue({
+          storeName: settings.storeName,
+          tagline: settings.tagline,
+          contactEmail: settings.contactEmail,
+          contactPhone: settings.contactPhone,
+          storeAddress: settings.storeAddress,
+        });
+        setLogoUrl(settings.logoUrl || '');
+      } catch {
+        message.error('Failed to load store settings.');
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    fetchSettings();
+  }, [form]);
+
+  const handleLogoUpload = async (file: File) => {
+    setLogoUploading(true);
+    try {
+      const res = await uploadImageAsset(file, 'settings');
+      setLogoUrl(res.data.data.asset.url);
+      message.success('Logo uploaded successfully');
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Logo upload failed');
+    } finally {
+      setLogoUploading(false);
     }
+  };
+
+  const uploadProps: UploadProps = {
+    showUploadList: false,
+    multiple: false,
+    accept: 'image/*',
+    beforeUpload: (file) => {
+      handleLogoUpload(file);
+      return false;
+    },
   };
 
   const onFinish = async (values: StoreSettingsFormValues) => {
     setLoading(true);
     try {
-      console.log('Target Synced Workspace Payload:', { ...values, logo: logoFile });
-      // Simulate asynchronous validation infrastructure saving lag times
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      message.success('Store configurations updated successfully!');
-    } catch {
-      message.error('Failed to sync store values. Please try again.');
+      const res = await updateStoreSettings({ ...values, logoUrl } as Partial<StoreSettingsType>);
+      message.success(res.data.message || 'Store configurations updated successfully!');
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Failed to sync store values. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -47,7 +81,7 @@ const StoreSettings: React.FC = () => {
 
   return (
     <div className="store-settings-container container-fluid p-4 min-vh-100">
-      
+
       {/* 1. Main Page Description Title Layout Area Block */}
       <div className="settings-section-header mb-4">
         <h1 className="main-panel-title mb-1">Settings</h1>
@@ -77,10 +111,7 @@ const StoreSettings: React.FC = () => {
           requiredMark={false}
           onFinish={onFinish}
           autoComplete="off"
-          initialValues={{
-            storeName: 'Ethnic Fashion',
-            contactPhone: '+91 98765 43210'
-          }}
+          disabled={initialLoading}
         >
           {/* Store Name Field */}
           <Form.Item
@@ -126,27 +157,26 @@ const StoreSettings: React.FC = () => {
           <Form.Item label="Store Logo" className="mb-4">
             <div className="logo-upload-wrapper d-flex align-items-center gap-4 flex-wrap flex-sm-nowrap">
               {/* Image Preview Box mirroring custom linear gradient found in design */}
-              <div 
+              <div
                 className="logo-preview-box overflow-hidden d-flex align-items-center justify-content-center flex-shrink-0"
-                style={!logoPreviewUrl ? { background: 'linear-gradient(135deg, #a800e6 0%, #ff007f 100%)' } : {}}
+                style={!logoUrl ? { background: 'linear-gradient(135deg, #a800e6 0%, #ff007f 100%)' } : {}}
               >
-                {logoPreviewUrl ? (
-                  <img src={logoPreviewUrl} alt="Store Logo Preview" className="w-100 h-100 object-fit-cover" />
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Store Logo Preview" className="w-100 h-100 object-fit-cover" />
                 ) : (
                   <div className="empty-filler-preview-tint" />
                 )}
               </div>
-              
+
               {/* Ant Design Upload button framework trigger */}
-              <Upload
-                name="storeLogo"
-                fileList={logoFile}
-                onChange={handleLogoChange}
-                beforeUpload={() => false}
-                maxCount={1}
-                showUploadList={false}
-              >
-                <Button icon={<UploadOutlined />} className="custom-upload-action-btn fw-semibold" size="large">
+              <Upload {...uploadProps}>
+                <Button
+                  icon={logoUploading ? <LoadingOutlined /> : <UploadOutlined />}
+                  className="custom-upload-action-btn fw-semibold"
+                  size="large"
+                  loading={logoUploading}
+                  disabled={initialLoading || logoUploading}
+                >
                   Upload Logo
                 </Button>
               </Upload>

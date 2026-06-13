@@ -88,8 +88,8 @@ import {
   RightOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { logout } from "../auth/authSlice";
+import { useAppDispatch } from "../hooks";
+import { logoutUser } from "../auth/authSlice";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -99,7 +99,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const naviagate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const menuItems = [
     {
@@ -188,8 +188,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       naviagate(link);
     }
   };
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
     naviagate("/login");
   };
 

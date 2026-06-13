@@ -74,6 +74,11 @@ $bg-new-border: #2563eb;
           font-size: 14px;
           font-weight: 600;
           color: $color-text-navy;
+
+          .verified-tick-icon {
+            color: #2563eb;
+            font-size: 13px;
+          }
         }
         .cust-email-lbl { font-size: 12px; }
       }
@@ -107,6 +112,18 @@ $bg-new-border: #2563eb;
           background-color: #ffffff;
           color: $bg-new-border;
           border: 1px solid rgba(37, 99, 235, 0.4);
+        }
+
+        &.tag-active-green {
+          background-color: #ecfdf5;
+          color: #059669;
+          border: 1px solid rgba(5, 150, 105, 0.25);
+        }
+
+        &.tag-suspended-red {
+          background-color: #fef2f2;
+          color: #dc2626;
+          border: 1px solid rgba(220, 38, 38, 0.25);
         }
       }
 
@@ -147,33 +164,93 @@ $bg-new-border: #2563eb;
         padding: 0;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
 
         .pagination-edge-btn {
-          border-radius: 6px;
+          border-radius: 8px;
           border-color: #d1d5db;
           font-weight: 600;
           color: #374151;
-          height: 32px;
+          height: 34px;
+          padding: 0 14px;
+          transition: all 0.15s ease;
+
+          &:hover:not(:disabled) {
+            border-color: $bg-vip;
+            color: $bg-vip;
+            background-color: rgba(124, 58, 237, 0.04);
+          }
+
+          &:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+          }
         }
 
         .ant-pagination-item {
-          border-radius: 6px;
+          border-radius: 8px;
           border-color: #d1d5db;
           background-color: #ffffff;
-          
+          min-width: 34px;
+          height: 34px;
+          line-height: 32px;
+          transition: all 0.15s ease;
+
           a {
             color: #374151;
             font-weight: 500;
           }
 
+          &:hover {
+            border-color: $bg-vip;
+            a { color: $bg-vip; }
+          }
+
           &-active {
-            border-color: rgba(124, 58, 237, 0.5) !important;
-            background-color: rgba(124, 58, 237, 0.04) !important;
-            a { color: $bg-vip !important; font-weight: 700; }
+            border-color: $bg-vip !important;
+            background-color: $bg-vip !important;
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35);
+
+            a { color: #ffffff !important; font-weight: 700; }
+
+            &:hover a { color: #ffffff !important; }
+          }
+        }
+
+        .ant-pagination-jump-prev, .ant-pagination-jump-next {
+          .ant-pagination-item-link {
+            border-radius: 8px;
+            color: #9ca3af;
+
+            &:hover { color: $bg-vip; }
+          }
+        }
+
+        .ant-pagination-disabled {
+          .pagination-edge-btn {
+            opacity: 0.45;
+            pointer-events: none;
           }
         }
       }
+    }
+  }
+}
+
+// ─── Customer Detail Modal (View / Edit) ──────────────────────────────────────
+.customer-detail-modal-override {
+  .customer-detail-view {
+    .detail-row {
+      border-bottom: 1px solid $color-border-subtle;
+
+      &:last-of-type { border-bottom: none; }
+
+      .detail-label { font-size: 13px; }
+    }
+
+    .address-card {
+      border-color: $color-border-subtle !important;
+      background-color: #f8fafc;
     }
   }
 }

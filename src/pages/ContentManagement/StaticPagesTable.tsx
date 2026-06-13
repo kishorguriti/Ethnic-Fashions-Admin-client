@@ -1,96 +1,77 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Table, Button, Tag, Space, message } from "antd";
-import { PlusOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-
-// Define the TypeScript interface for our static page entry
-interface StaticPageItem {
-  key: string;
-  pageTitle: string;
-  urlSlug: string;
-  lastUpdated: string;
-  status: "Published" | "Draft";
-}
-
-const initialPages: StaticPageItem[] = [
-  {
-    key: "1",
-    pageTitle: "Privacy Policy",
-    urlSlug: "/privacy-policy",
-    lastUpdated: "Mar 1, 2026",
-    status: "Published",
-  },
-  {
-    key: "2",
-    pageTitle: "Terms & Conditions",
-    urlSlug: "/terms",
-    lastUpdated: "Mar 1, 2026",
-    status: "Published",
-  },
-  {
-    key: "3",
-    pageTitle: "Shipping Policy",
-    urlSlug: "/shipping",
-    lastUpdated: "Feb 28, 2026",
-    status: "Published",
-  },
-  {
-    key: "4",
-    pageTitle: "Return & Refund Policy",
-    urlSlug: "/returns",
-    lastUpdated: "Feb 28, 2026",
-    status: "Published",
-  },
-];
+import dayjs from "dayjs";
+import {
+  getAdminStaticPages,
+  type StaticPage,
+} from "../../services/staticPageApi";
+import EditStaticPageModal from "./EditStaticPageModal";
 
 const StaticPagesTable: React.FC = () => {
-  const [pages] = useState<StaticPageItem[]>(initialPages);
+  const [pages, setPages] = useState<StaticPage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // Functional Interactive Handlers
-  const handleAddNewPage = () => {
-    message.success("Opening Create New Page setup builder wizard");
+  const loadPages = async () => {
+    setLoading(true);
+    try {
+      const res = await getAdminStaticPages();
+      setPages(res.data.data.pages);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || "Failed to load pages");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleViewPage = (slug: string) => {
-    message.info(`Opening preview router lane for: ${slug}`);
+  useEffect(() => {
+    loadPages();
+  }, []);
+
+  const handleEditPage = (id: string) => {
+    setEditingPageId(id);
+    setModalOpen(true);
   };
 
-  const handleEditPage = (title: string) => {
-    message.info(`Opening rich-text inline block editor for: "${title}"`);
+  const handleEditSuccess = (updated: StaticPage) => {
+    setPages((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
   };
 
-  // Ant Design Table Columns Config Setup Schema
-  const columns: ColumnsType<StaticPageItem> = [
+  const columns: ColumnsType<StaticPage> = [
     {
       title: "Page Title",
-      dataIndex: "pageTitle",
-      key: "pageTitle",
+      dataIndex: "title",
+      key: "title",
       className: "text-dark-custom fw-semibold column-title",
       width: "30%",
     },
     {
       title: "URL Slug",
-      dataIndex: "urlSlug",
-      key: "urlSlug",
+      dataIndex: "slug",
+      key: "slug",
       className: "column-slug",
       render: (slug: string) => (
-        <span className="purple-slug-link fw-medium">{slug}</span>
+        <span className="purple-slug-link fw-medium">/{slug}</span>
       ),
     },
     {
       title: "Last Updated",
-      dataIndex: "lastUpdated",
-      key: "lastUpdated",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
       className: "text-muted-custom column-updated",
+      render: (updatedAt: string) => dayjs(updatedAt).format("MMM D, YYYY"),
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
       className: "column-status",
-      render: (status: "Published" | "Draft") => (
-        <Tag className={`page-status-tag tag-${status.toLowerCase()}`}>
-          {status}
+      render: (status: "published" | "draft") => (
+        <Tag className={`page-status-tag tag-${status}`}>
+          {status === "published" ? "Published" : "Draft"}
         </Tag>
       ),
     },
@@ -102,16 +83,9 @@ const StaticPagesTable: React.FC = () => {
       render: (_, record) => (
         <Space size="middle" className="actions-group-wrapper">
           <Button
-            icon={<EyeOutlined />}
-            className="btn-action btn-view"
-            onClick={() => handleViewPage(record.urlSlug)}
-          >
-            View
-          </Button>
-          <Button
             icon={<EditOutlined />}
             className="btn-action btn-edit"
-            onClick={() => handleEditPage(record.pageTitle)}
+            onClick={() => handleEditPage(record._id)}
           >
             Edit
           </Button>
@@ -122,28 +96,24 @@ const StaticPagesTable: React.FC = () => {
 
   return (
     <div className="container-fluid my-2 static-pages-manager">
-      {/* Upper Button Group Layout Box */}
-      <div className="d-flex justify-content-end mb-4">
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          className="btn-purple-primary"
-          onClick={handleAddNewPage}
-        >
-          New Page
-        </Button>
-      </div>
-
-      {/* Main Structural Shared Table Shell */}
       <div className="table-card shadow-sm p-4 py-3 bg-white rounded-4">
         <Table
           columns={columns}
           dataSource={pages}
+          rowKey="_id"
+          loading={loading}
           pagination={false}
-          scroll={{ x: "max-content" }} // Preserves row integrity across mobile viewports
+          scroll={{ x: "max-content" }}
           className="custom-pages-table"
         />
       </div>
+
+      <EditStaticPageModal
+        open={modalOpen}
+        pageId={editingPageId}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 };

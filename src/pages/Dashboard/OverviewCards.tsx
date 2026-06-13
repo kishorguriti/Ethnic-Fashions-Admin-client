@@ -1,8 +1,10 @@
-import React from 'react';
-import { 
-  DollarOutlined, ShoppingCartOutlined, UserOutlined, 
-  ClockCircleOutlined, WarningOutlined 
+import React, { useEffect, useState } from 'react';
+import {
+  UserOutlined, ShoppingOutlined, AppstoreOutlined,
+  WarningOutlined, HeartOutlined
 } from '@ant-design/icons';
+import { message } from 'antd';
+import { getDashboardOverview, type DashboardOverview } from '../../services/adminApi';
 
 interface CardData {
   id: number;
@@ -15,51 +17,65 @@ interface CardData {
 }
 
 const OverviewCards: React.FC = () => {
+  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const res = await getDashboardOverview();
+        setOverview(res.data.data);
+      } catch {
+        message.error('Failed to load dashboard overview.');
+      }
+    };
+    fetchOverview();
+  }, []);
+
   const cards: CardData[] = [
     {
       id: 1,
-      title: 'Total Revenue',
-      value: '₹8,450',
-      badgeText: '+12.5% from last month',
-      badgeType: 'success',
-      icon: <DollarOutlined />,
-      themeClass: 'theme-green',
-    },
-    {
-      id: 2,
-      title: 'Orders Today',
-      value: '142',
-      badgeText: '+8 from yesterday',
-      badgeType: 'success',
-      icon: <ShoppingCartOutlined />,
-      themeClass: 'theme-blue',
-    },
-    {
-      id: 3,
       title: 'Total Customers',
-      value: '3,842',
-      badgeText: '+24 this week',
+      value: overview ? overview.totalCustomers.toLocaleString('en-IN') : '—',
+      badgeText: 'All registered customers',
       badgeType: 'success',
       icon: <UserOutlined />,
       themeClass: 'theme-purple',
     },
     {
-      id: 4,
-      title: 'Pending Orders',
-      value: '28',
-      badgeText: '3 urgent',
-      badgeType: 'neutral',
-      icon: <ClockCircleOutlined />,
-      themeClass: 'theme-orange',
+      id: 2,
+      title: 'Total Products',
+      value: overview ? overview.totalProducts.toLocaleString('en-IN') : '—',
+      badgeText: 'Active in catalog',
+      badgeType: 'success',
+      icon: <ShoppingOutlined />,
+      themeClass: 'theme-blue',
     },
     {
-      id: 5,
+      id: 3,
+      title: 'Total Categories',
+      value: overview ? overview.totalCategories.toLocaleString('en-IN') : '—',
+      badgeText: 'Active categories',
+      badgeType: 'neutral',
+      icon: <AppstoreOutlined />,
+      themeClass: 'theme-green',
+    },
+    {
+      id: 4,
       title: 'Low Stock Alerts',
-      value: '12',
+      value: overview ? overview.lowStockCount.toLocaleString('en-IN') : '—',
       badgeText: 'Needs attention',
       badgeType: 'danger',
       icon: <WarningOutlined />,
       themeClass: 'theme-red',
+    },
+    {
+      id: 5,
+      title: 'Total Wishlisted Items',
+      value: overview ? overview.totalWishlisted.toLocaleString('en-IN') : '—',
+      badgeText: 'Across all customers',
+      badgeType: 'neutral',
+      icon: <HeartOutlined />,
+      themeClass: 'theme-orange',
     },
   ];
 

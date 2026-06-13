@@ -1,43 +1,84 @@
-import React, { useState } from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
+import React, { useEffect, useState } from "react";
+import { Modal, Form, Input, InputNumber, Button, message } from "antd";
+import {
+  createCategory,
+  updateCategory,
+  type Category,
+} from "../../services/categoryApi";
 
-// TypeScript schema interfaces defining properties passed to the modal
 interface AddCategoryModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (newCategory: { name: string; description: string }) => void;
+  onSuccess: (category: Category) => void;
+  /** Category being edited, or null when creating a new one */
+  editingCategory?: Category | null;
+  /** Parent category id when creating a subcategory */
+  parentId?: string | null;
+  parentName?: string;
 }
 
 interface FormValues {
-  categoryName: string;
-  description?: string;
+  name: string;
+  displayOrder?: number;
 }
 
-const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ open, onClose, onSuccess }) => {
+const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
+  open,
+  onClose,
+  onSuccess,
+  editingCategory = null,
+  parentId = null,
+  parentName,
+}) => {
   const [form] = Form.useForm<FormValues>();
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
+  const isEdit = !!editingCategory;
 
-  // Handle local form submission lifecycle
+  useEffect(() => {
+    if (open) {
+      form.setFieldsValue({
+        name: editingCategory?.name ?? "",
+        displayOrder: editingCategory?.displayOrder ?? undefined,
+      });
+    }
+  }, [open, editingCategory, form]);
+
   const handleFinish = async (values: FormValues) => {
     setConfirmLoading(true);
     try {
-      // Simulate network request verification
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      
-      onSuccess({
-        name: values.categoryName,
-        description: values.description || '',
-      });
-
+      if (isEdit && editingCategory) {
+        const res = await updateCategory(editingCategory._id, {
+          name: values.name,
+          displayOrder: values.displayOrder,
+        });
+        message.success(res.data.message);
+        onSuccess(res.data.data.category);
+      } else {
+        const res = await createCategory({
+          name: values.name,
+          displayOrder: values.displayOrder,
+          ...(parentId ? { parent: parentId } : {}),
+        });
+        message.success(res.data.message);
+        onSuccess(res.data.data.category);
+      }
       form.resetFields();
-      message.success('Category created successfully!');
       onClose();
-    } catch (error) {
-      message.error('An error occurred. Please try again.');
+    } catch (error: any) {
+      message.error(
+        error?.response?.data?.message ||
+          "An error occurred. Please try again.",
+      );
     } finally {
       setConfirmLoading(false);
     }
   };
+
+  const title = isEdit
+    ? `Edit ${parentId ? "Subcategory" : "Category"}`
+    : parentId
+      ? `Add Subcategory${parentName ? ` to ${parentName}` : ""}`
+      : "Add New Category";
 
   return (
     <Modal
@@ -51,7 +92,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ open, onClose, onSu
     >
       <div className="modal-inner-content py-2">
         {/* Header Block Section */}
-        <h2 className="modal-headline mb-4">Add New Category</h2>
+        <h2 className="modal-headline mb-4">{title}</h2>
 
         {/* Ant Design Form Control Module */}
         <Form
@@ -65,28 +106,29 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ open, onClose, onSu
           {/* Category Name String Input Field */}
           <Form.Item
             label="Category Name"
-            name="categoryName"
+            name="name"
             rules={[
-              { required: true, message: 'Please enter a category name!' },
-              { min: 3, message: 'Category name must be at least 3 characters long!' }
+              { required: true, message: "Please enter a category name!" },
+              {
+                min: 2,
+                message: "Category name must be at least 2 characters long!",
+              },
             ]}
           >
-            <Input 
-              placeholder="Enter category name" 
-              className="custom-capsule-input" 
+            <Input
+              placeholder="Enter category name"
+              className="custom-capsule-input"
               size="large"
             />
           </Form.Item>
 
-          {/* Description Multi-line Paragraph Input Field */}
-          <Form.Item
-            label="Description"
-            name="description"
-          >
-            <Input.TextArea 
-              placeholder="Enter description" 
-              className="custom-capsule-input custom-textarea" 
-              rows={3}
+          {/* Display Order Numeric Input Field */}
+          <Form.Item label="Display Order" name="displayOrder">
+            <InputNumber
+              placeholder="0"
+              className="custom-capsule-input w-100"
+              size="large"
+              min={0}
             />
           </Form.Item>
 
@@ -99,7 +141,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ open, onClose, onSu
               className="brand-submit-action-btn w-100 d-flex align-items-center justify-content-center"
               size="large"
             >
-              Create Category
+              {isEdit ? "Save Changes" : "Create Category"}
             </Button>
           </Form.Item>
         </Form>

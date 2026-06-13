@@ -1,114 +1,65 @@
-import React, { useState } from "react";
-import {
-  Button,
-  Input,
-  Select,
-  Table,
-  Tag,
-  Modal,
-  InputNumber,
-  message,
-} from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, Input, Select, Table, Tag, Modal, InputNumber, message } from "antd";
 import {
   SearchOutlined,
   MedicineBoxOutlined,
   WarningOutlined,
   CloseCircleOutlined,
   EditOutlined,
-  HistoryOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import {
+  getAdminVariants,
+  updateVariantStock,
+  type InventoryVariant,
+} from "../services/productApi";
 
-// TypeScript schema interfaces defining static product stock items
-interface InventoryItem {
-  key: string;
-  name: string;
-  sku: string;
-  category: "Sarees" | "Churidars" | "Jewellery";
-  currentStock: number;
-  lowStockAlert: number;
-}
+const LOW_STOCK_THRESHOLD = 5;
+
+type StockStatus = "In Stock" | "Low Stock" | "Out of Stock";
+
+const getStockStatus = (available: number): StockStatus => {
+  if (available === 0) return "Out of Stock";
+  if (available <= LOW_STOCK_THRESHOLD) return "Low Stock";
+  return "In Stock";
+};
 
 const InventoryManagement: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>("All Categories");
-  const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<"all" | "in" | "low" | "out">("all");
+  const [inventory, setInventory] = useState<InventoryVariant[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Dynamic state list tracking data values present in your layout image
-  const [inventory, setInventory] = useState<InventoryItem[]>([
-    {
-      key: "1",
-      name: "Banarasi Silk Saree",
-      sku: "SAR-001",
-      category: "Sarees",
-      currentStock: 24,
-      lowStockAlert: 10,
-    },
-    {
-      key: "2",
-      name: "Kanjivaram Wedding Saree",
-      sku: "SAR-015",
-      category: "Sarees",
-      currentStock: 3,
-      lowStockAlert: 10,
-    },
-    {
-      key: "3",
-      name: "Designer Anarkali Suit",
-      sku: "CHU-008",
-      category: "Churidars",
-      currentStock: 15,
-      lowStockAlert: 5,
-    },
-    {
-      key: "4",
-      name: "Pearl Earrings",
-      sku: "JEW-023",
-      category: "Jewellery",
-      currentStock: 0,
-      lowStockAlert: 5,
-    },
-    {
-      key: "5",
-      name: "Gold Plated Necklace",
-      sku: "JEW-012",
-      category: "Jewellery",
-      currentStock: 8,
-      lowStockAlert: 10,
-    },
-    {
-      key: "6",
-      name: "Cotton Churidar",
-      sku: "CHU-004",
-      category: "Churidars",
-      currentStock: 2,
-      lowStockAlert: 8,
-    },
-  ]);
-
-  // Helper utility resolving stock state logic matching design specifications
-  const getStockStatus = (
-    current: number,
-    threshold: number,
-  ): "In Stock" | "Low Stock" | "Out of Stock" => {
-    if (current === 0) return "Out of Stock";
-    if (current <= threshold) return "Low Stock";
-    return "In Stock";
+  const loadInventory = async () => {
+    setLoading(true);
+    try {
+      const res = await getAdminVariants({
+        limit: 100,
+        search: searchQuery || undefined,
+        status: selectedStatus === "all" ? undefined : selectedStatus,
+      });
+      setInventory(res.data.data.variants);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || "Failed to load inventory");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Metrics KPI calculations
+  useEffect(() => {
+    const timer = setTimeout(loadInventory, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, selectedStatus]);
+
   const totalItemsCount = inventory.length;
   const lowStockCount = inventory.filter(
-    (item) => item.currentStock > 0 && item.currentStock <= item.lowStockAlert,
+    (item) => item.available > 0 && item.available <= LOW_STOCK_THRESHOLD,
   ).length;
-  const outOfStockCount = inventory.filter(
-    (item) => item.currentStock === 0,
-  ).length;
+  const outOfStockCount = inventory.filter((item) => item.available === 0).length;
 
-  // Handle local dynamic stock level inline modification updates
-  const handleUpdateStock = (key: string, currentVal: number) => {
-    let targetNewVal: number | null = currentVal;
+  const handleUpdateStock = (record: InventoryVariant) => {
+    let targetNewVal: number | null = record.stock;
 
     Modal.confirm({
       title: "Update Stock Level",
@@ -116,11 +67,12 @@ const InventoryManagement: React.FC = () => {
       content: (
         <div className="pt-3">
           <p className="mb-2 text-muted">
-            Specify the target count for this product item entry:
+            Specify the new stock count for {record.product.name} ({record.color}
+            {record.size ? ` / ${record.size}` : ""}):
           </p>
           <InputNumber
             min={0}
-            defaultValue={currentVal}
+            defaultValue={record.stock}
             onChange={(val) => {
               targetNewVal = val;
             }}
@@ -130,28 +82,44 @@ const InventoryManagement: React.FC = () => {
       ),
       okText: "Save Update",
       cancelText: "Cancel",
-      onOk() {
-        if (targetNewVal !== null) {
+      onOk: async () => {
+        if (targetNewVal === null) return;
+        try {
+          const res = await updateVariantStock(record.product._id, record._id, targetNewVal);
           setInventory((prev) =>
             prev.map((item) =>
-              item.key === key
-                ? { ...item, currentStock: targetNewVal as number }
+              item._id === record._id
+                ? {
+                    ...item,
+                    stock: res.data.data.variant.stock,
+                    available: res.data.data.variant.available,
+                  }
                 : item,
             ),
           );
-          message.success("Stock level variable synced successfully!");
+          message.success("Stock level updated successfully!");
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || "Failed to update stock");
         }
       },
     });
   };
 
-  // Ant Design Inventory Layout Table Columns
-  const columns: ColumnsType<InventoryItem> = [
+  const columns: ColumnsType<InventoryVariant> = [
     {
       title: "Product Name",
-      dataIndex: "name",
       key: "name",
-      render: (text) => <span className="product-title-bold">{text}</span>,
+      render: (_, record) => <span className="product-title-bold">{record.product.name}</span>,
+    },
+    {
+      title: "Color / Size",
+      key: "variant",
+      render: (_, record) => (
+        <span>
+          {record.color}
+          {record.size ? ` / ${record.size}` : ""}
+        </span>
+      ),
     },
     {
       title: "SKU",
@@ -161,101 +129,53 @@ const InventoryManagement: React.FC = () => {
     },
     {
       title: "Category",
-      dataIndex: "category",
       key: "category",
-      render: (text) => <span className="category-text-label">{text}</span>,
+      render: (_, record) => <span className="category-text-label">{record.product.category?.name}</span>,
     },
     {
       title: "Current Stock",
-      dataIndex: "currentStock",
-      key: "currentStock",
-      render: (stock) => (
-        <span className="stock-counter-badge px-3 py-1.5">{stock}</span>
-      ),
-    },
-    {
-      title: "Low Stock Alert",
-      dataIndex: "lowStockAlert",
-      key: "lowStockAlert",
-      render: (alert) => <span className="alert-threshold-label">{alert}</span>,
+      dataIndex: "available",
+      key: "available",
+      render: (available) => <span className="stock-counter-badge px-3 py-1.5">{available}</span>,
     },
     {
       title: "Status",
       key: "status",
       render: (_, record) => {
-        const status = getStockStatus(
-          record.currentStock,
-          record.lowStockAlert,
-        );
-        const styleMap = {
+        const status = getStockStatus(record.available);
+        const styleMap: Record<StockStatus, string> = {
           "In Stock": "status-instock",
           "Low Stock": "status-lowstock",
           "Out of Stock": "status-outofstock",
         };
-        return (
-          <Tag className={`inventory-status-pill ${styleMap[status]}`}>
-            {status}
-          </Tag>
-        );
+        return <Tag className={`inventory-status-pill ${styleMap[status]}`}>{status}</Tag>;
       },
     },
     {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <div className="action-buttons-group d-flex align-items-center gap-3">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            className="action-btn-update px-0"
-            onClick={() => handleUpdateStock(record.key, record.currentStock)}
-          >
-            Update
-          </Button>
-          <Button
-            type="text"
-            icon={<HistoryOutlined />}
-            className="action-btn-history px-0"
-          >
-            History
-          </Button>
-        </div>
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          className="action-btn-update px-0"
+          onClick={() => handleUpdateStock(record)}
+        >
+          Update
+        </Button>
       ),
     },
   ];
 
-  // Filtering Core Mechanism Data pipeline layout logic
-  const filteredInventory = inventory.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All Categories" ||
-      item.category === selectedCategory;
-
-    const status = getStockStatus(item.currentStock, item.lowStockAlert);
-    const matchesStatus =
-      selectedStatus === "All Status" || status === selectedStatus;
-
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
-
   return (
     <div className="inventory-management-dashboard container-fluid p-4">
-      {/* Top Main Heading Line Action Block */}
       <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
         <div>
           <h1 className="main-section-heading mb-1">Inventory Management</h1>
-          <p className="sub-section-desc text-muted mb-0">
-            Track and manage product stock levels
-          </p>
+          <p className="sub-section-desc text-muted mb-0">Track and manage product stock levels</p>
         </div>
-        <Button type="primary" className="bulk-update-brand-btn">
-          Bulk Stock Update
-        </Button>
       </div>
 
-      {/* KPI Numerical Counters Summary Cards Panel Wrapper */}
       <div className="row g-4 mb-4">
         <div className="col-12 col-md-4">
           <div className="metric-kpi-surface-card p-3 d-flex align-items-center gap-3">
@@ -263,9 +183,7 @@ const InventoryManagement: React.FC = () => {
               <MedicineBoxOutlined />
             </div>
             <div>
-              <span className="kpi-lbl text-muted d-block mb-1">
-                Total Items
-              </span>
+              <span className="kpi-lbl text-muted d-block mb-1">Total Variants</span>
               <h2 className="kpi-numeric-value mb-0">{totalItemsCount}</h2>
             </div>
           </div>
@@ -276,9 +194,7 @@ const InventoryManagement: React.FC = () => {
               <WarningOutlined />
             </div>
             <div>
-              <span className="kpi-lbl text-muted d-block mb-1">
-                Low Stock Items
-              </span>
+              <span className="kpi-lbl text-muted d-block mb-1">Low Stock Items</span>
               <h2 className="kpi-numeric-value mb-0">{lowStockCount}</h2>
             </div>
           </div>
@@ -289,16 +205,13 @@ const InventoryManagement: React.FC = () => {
               <CloseCircleOutlined />
             </div>
             <div>
-              <span className="kpi-lbl text-muted d-block mb-1">
-                Out of Stock
-              </span>
+              <span className="kpi-lbl text-muted d-block mb-1">Out of Stock</span>
               <h2 className="kpi-numeric-value mb-0">{outOfStockCount}</h2>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filter Control Options Toolbar Strip Wrapper Block */}
       <div className="filter-controls-card p-3 mb-4 d-flex flex-column flex-md-row justify-content-between gap-3 align-items-stretch align-items-md-center">
         <Input
           placeholder="Search by product name or SKU..."
@@ -309,35 +222,25 @@ const InventoryManagement: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
           <Select
-            value={selectedCategory}
-            onChange={(val) => setSelectedCategory(val)}
-            className="toolbar-select-dropdown"
-            options={[
-              { value: "All Categories", label: "All Categories" },
-              { value: "Sarees", label: "Sarees" },
-              { value: "Churidars", label: "Churidars" },
-              { value: "Jewellery", label: "Jewellery" },
-            ]}
-          />
-          <Select
             value={selectedStatus}
             onChange={(val) => setSelectedStatus(val)}
             className="toolbar-select-dropdown"
             options={[
-              { value: "All Status", label: "All Status" },
-              { value: "In Stock", label: "In Stock" },
-              { value: "Low Stock", label: "Low Stock" },
-              { value: "Out of Stock", label: "Out of Stock" },
+              { value: "all", label: "All Status" },
+              { value: "in", label: "In Stock" },
+              { value: "low", label: "Low Stock" },
+              { value: "out", label: "Out of Stock" },
             ]}
           />
         </div>
       </div>
 
-      {/* Main Core Inventory Table Panel Screen Container */}
       <div className="inventory-table-panel bg-white">
         <Table
           columns={columns}
-          dataSource={filteredInventory}
+          dataSource={inventory}
+          rowKey="_id"
+          loading={loading}
           pagination={false}
           className="custom-inventory-data-table"
         />

@@ -1,19 +1,16 @@
-const TOKEN_KEY = "token";
+import type { AdminUser } from "./types";
+
 const USER_KEY = "user";
 
-export const saveAuth = (data: any) => {
-  localStorage.setItem(TOKEN_KEY, data.token);
-  localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+export const saveAuth = (user: AdminUser) => {
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
 };
 
-export const getAuth = () => {
-  const token = localStorage.getItem(TOKEN_KEY);
+export const getAuth = (): AdminUser | null => {
   const user = localStorage.getItem(USER_KEY);
-
-  return token && user ? { token, user: JSON.parse(user) } : null;
+  return user ? JSON.parse(user) : null;
 };
 
 export const clearAuth = () => {
-  localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 };

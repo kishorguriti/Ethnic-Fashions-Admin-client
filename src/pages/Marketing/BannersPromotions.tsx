@@ -1,72 +1,111 @@
-import React, { useState } from 'react';
-import { Button, Switch, Modal, message } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Switch, Modal, Spin, Alert, Empty, message, Tag } from 'antd';
 import { PictureOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import {
+  getAdminBanners,
+  toggleBannerStatus,
+  deleteBanner,
+  type Banner,
+} from '../../services/bannerApi';
+import AddBannerModal from './AddBannerModal';
 
-// TypeScript schema interface defining promotion banners
-interface BannerRecord {
-  id: string;
-  title: string;
-  placement: string;
-  isActive: boolean;
-  gradientStart: string;
-  gradientEnd: string;
-}
+const placementLabels: Record<string, string> = {
+  hero: 'Homepage Hero',
+  promotional: 'Promotional',
+  sub_banner: 'Sub Banner',
+};
 
 const BannersPromotions: React.FC = () => {
-  // Pre-filled dynamic state matching your image cards exactly
-  const [banners, setBanners] = useState<BannerRecord[]>([
-    { id: '1', title: 'Festival Sale Banner 1', placement: 'Homepage Hero', isActive: true, gradientStart: '#f3e8ff', gradientEnd: '#fce7f3' },
-    { id: '2', title: 'Festival Sale Banner 2', placement: 'Homepage Hero', isActive: true, gradientStart: '#f3e8ff', gradientEnd: '#fce7f3' },
-    { id: '3', title: 'Festival Sale Banner 3', placement: 'Homepage Hero', isActive: false, gradientStart: '#f3e8ff', gradientEnd: '#fce7f3' },
-  ]);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
 
-  // Handle addition of a new banner placeholder asset block
+  const fetchBanners = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getAdminBanners({ limit: 100 });
+      setBanners(res.data.data.banners);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Failed to load banners. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
   const handleAddBanner = () => {
-    const newId = (banners.length + 1).toString();
-    const newBanner: BannerRecord = {
-      id: newId,
-      title: `Festival Sale Banner ${newId}`,
-      placement: 'Homepage Hero',
-      isActive: false,
-      gradientStart: '#f3e8ff',
-      gradientEnd: '#fce7f3'
-    };
-    setBanners(prev => [...prev, newBanner]);
-    message.success('New promotion banner block generated.');
+    setEditingBanner(null);
+    setModalOpen(true);
   };
 
-  // Switch status change event toggles
-  const handleToggleStatus = (id: string, checked: boolean) => {
-    setBanners(prev => prev.map(banner => 
-      banner.id === id ? { ...banner, isActive: checked } : banner
-    ));
-    message.info(`Banner status synced to: ${checked ? 'Active' : 'Inactive'}`);
+  const handleEditBanner = (banner: Banner) => {
+    setEditingBanner(banner);
+    setModalOpen(true);
   };
 
-  // Safe item erasure dialog modal routine wrapper
-  const handleDeleteBanner = (id: string, title: string) => {
+  const handleModalSuccess = (banner: Banner) => {
+    setBanners((prev) => {
+      const exists = prev.some((b) => b._id === banner._id);
+      return exists ? prev.map((b) => (b._id === banner._id ? banner : b)) : [banner, ...prev];
+    });
+  };
+
+  const handleToggleStatus = async (banner: Banner) => {
+    try {
+      const res = await toggleBannerStatus(banner._id);
+      message.success(res.data.message);
+      setBanners((prev) => prev.map((b) => (b._id === banner._id ? res.data.data.banner : b)));
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Failed to update banner status');
+    }
+  };
+
+  const handleDeleteBanner = (banner: Banner) => {
     Modal.confirm({
-      title: `Delete ${title}?`,
+      title: `Delete ${banner.title}?`,
       icon: <ExclamationCircleOutlined className="text-danger" />,
-      content: 'This operation eliminates the banner canvas configuration layout from live views.',
+      content: 'This operation removes the banner from live views.',
       okText: 'Delete Banner',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk() {
-        setBanners(prev => prev.filter(b => b.id !== id));
-        message.success(`${title} completely removed.`);
-      }
+      async onOk() {
+        try {
+          await deleteBanner(banner._id);
+          message.success(`${banner.title} removed.`);
+          setBanners((prev) => prev.filter((b) => b._id !== banner._id));
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || 'Failed to delete banner');
+        }
+      },
     });
+  };
+
+  const previewStyle = (banner: Banner): React.CSSProperties => {
+    const imageUrl = banner.desktopImage?.url || banner.mobileImage?.url;
+    if (imageUrl) {
+      return {
+        backgroundImage: `url(${imageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      };
+    }
+    return { background: 'linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%)' };
   };
 
   return (
     <div className="banners-promotions-dashboard p-2">
-      
+
       {/* Upper Core Control Action Trigger Header Bar */}
       <div className="d-flex justify-content-end mb-4">
-        <Button 
-          type="primary" 
-          icon={<PictureOutlined />} 
+        <Button
+          type="primary"
+          icon={<PictureOutlined />}
           onClick={handleAddBanner}
           className="add-banner-brand-btn px-4 py-2 d-inline-flex align-items-center justify-content-center fw-bold"
           size="large"
@@ -75,57 +114,71 @@ const BannersPromotions: React.FC = () => {
         </Button>
       </div>
 
-      {/* Grid Canvas Wrapper Set Layer */}
-      <div className="row g-4">
-        {banners.map((banner) => (
-          <div className="col-12 col-md-6 col-xl-4" key={banner.id}>
-            <div className="banner-promotion-card border overflow-hidden bg-white">
-              
-              {/* Dynamic Gradient Visual Placeholder Surface matching your design */}
-              <div 
-                className="banner-preview-canvas" 
-                style={{ background: `linear-gradient(135deg, ${banner.gradientStart} 0%, ${banner.gradientEnd} 100%)` }}
-              />
+      {loading ? (
+        <div className="d-flex justify-content-center p-5">
+          <Spin size="large" />
+        </div>
+      ) : error ? (
+        <Alert type="error" message={error} showIcon className="mb-3" />
+      ) : banners.length === 0 ? (
+        <Empty description="No banners created yet" className="p-5" />
+      ) : (
+        <div className="row g-4">
+          {banners.map((banner) => (
+            <div className="col-12 col-md-6 col-xl-4" key={banner._id}>
+              <div className="banner-promotion-card border overflow-hidden bg-white">
 
-              {/* Lower Details Metadata Information Panel Block */}
-              <div className="banner-card-body p-4">
-                
-                {/* Information Row Containing Title & Toggle Switch Component */}
-                <div className="d-flex justify-content-between align-items-center mb-1">
-                  <h4 className="banner-main-title text-dark mb-0 fw-bold">{banner.title}</h4>
-                  <Switch 
-                    checked={banner.isActive} 
-                    onChange={(checked) => handleToggleStatus(banner.id, checked)}
-                    className="custom-banner-toggle"
-                  />
-                </div>
-                
-                <span className="banner-placement-lbl text-muted d-block mb-4">{banner.placement}</span>
+                <div className="banner-preview-canvas" style={previewStyle(banner)} />
 
-                {/* Card Action Controls Row Layout Blocks */}
-                <div className="d-flex align-items-center gap-2">
-                  <Button 
-                    icon={<EditOutlined />} 
-                    className="btn-action-edit flex-grow-1 fw-bold d-inline-flex align-items-center justify-content-center"
-                    onClick={() => message.info(`Editing details configuration for card ${banner.id}`)}
-                  >
-                    Edit
-                  </Button>
-                  <Button 
-                    type="text"
-                    danger
-                    icon={<DeleteOutlined />} 
-                    className="btn-action-trash border d-inline-flex align-items-center justify-content-center"
-                    onClick={() => handleDeleteBanner(banner.id, banner.title)}
-                  />
+                <div className="banner-card-body p-4">
+
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <h4 className="banner-main-title text-dark mb-0 fw-bold">{banner.title}</h4>
+                    <Switch
+                      checked={banner.isActive}
+                      onChange={() => handleToggleStatus(banner)}
+                      className="custom-banner-toggle"
+                    />
+                  </div>
+
+                  <div className="mb-4 d-flex align-items-center gap-2">
+                    <span className="banner-placement-lbl text-muted">
+                      {placementLabels[banner.placement] || banner.placement}
+                    </span>
+                    {banner.campaign && <Tag>{banner.campaign}</Tag>}
+                  </div>
+
+                  <div className="d-flex align-items-center gap-2">
+                    <Button
+                      icon={<EditOutlined />}
+                      className="btn-action-edit flex-grow-1 fw-bold d-inline-flex align-items-center justify-content-center"
+                      onClick={() => handleEditBanner(banner)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      className="btn-action-trash border d-inline-flex align-items-center justify-content-center"
+                      onClick={() => handleDeleteBanner(banner)}
+                    />
+                  </div>
+
                 </div>
 
               </div>
-
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      <AddBannerModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleModalSuccess}
+        editingBanner={editingBanner}
+      />
 
     </div>
   );

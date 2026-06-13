@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Input,
@@ -6,139 +6,150 @@ import {
   Button,
   Switch,
   Tag,
-  Dropdown,
-  type MenuProps,
-  Checkbox,
+  Modal,
+  message,
 } from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
   PlusOutlined,
   EditOutlined,
-  MoreOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useNavigate } from "react-router-dom";
+import {
+  getAdminProducts,
+  deleteProduct,
+  toggleProductStatus,
+  approveProduct,
+  rejectProduct,
+  type Product,
+  type ApprovalStatus,
+} from "../../services/productApi";
 
-// TypeScript schema defining dynamic product records
-interface ProductRecord {
-  key: string;
-  name: string;
-  variant?: string;
-  category: "Sarees" | "Churidars" | "Jewellery";
-  price: number;
-  stock: number;
-  status: "Active" | "Low Stock";
-  isActive: boolean;
-  colorBlock: string; // Dynamic placeholder hex color code mapping the design
-}
+const statusColors: Record<string, string> = {
+  pending: "gold",
+  approved: "green",
+  rejected: "red",
+};
 
 const ProductsTable: React.FC = () => {
-  const [searchText, setSearchText] = useState<string>("");
-  const [categoryFilter, setCategoryFilter] =
-    useState<string>("All Categories");
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ApprovalStatus | "all">("all");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  // Dynamic state list pre-filled with data values from the image
-  const [products, setProducts] = useState<ProductRecord[]>([
-    {
-      key: "1",
-      name: "Banarasi Silk Saree",
-      variant: "Red",
-      category: "Sarees",
-      price: 8500,
-      stock: 24,
-      status: "Active",
-      isActive: true,
-      colorBlock: "#e62424",
-    },
-    {
-      key: "2",
-      name: "Designer Anarkali Suit",
-      category: "Churidars",
-      price: 4200,
-      stock: 15,
-      status: "Active",
-      isActive: true,
-      colorBlock: "#246ee6",
-    },
-    {
-      key: "3",
-      name: "Gold Plated Necklace Set",
-      category: "Jewellery",
-      price: 12000,
-      stock: 8,
-      status: "Active",
-      isActive: true,
-      colorBlock: "#e6b824",
-    },
-    {
-      key: "4",
-      name: "Kanjivaram Wedding Saree",
-      category: "Sarees",
-      price: 15000,
-      stock: 3,
-      status: "Low Stock",
-      isActive: false,
-      colorBlock: "#e67324",
-    },
-    {
-      key: "5",
-      name: "Cotton Churidar",
-      variant: "Blue",
-      category: "Churidars",
-      price: 1800,
-      stock: 42,
-      status: "Active",
-      isActive: true,
-      colorBlock: "#b824e6",
-    },
-  ]);
 
-  // Handle live toggle changes for user switches
-  const handleToggleActive = (key: string, checked: boolean) => {
-    setProducts((prev) =>
-      prev.map((prod) =>
-        prod.key === key
-          ? {
-              ...prod,
-              isActive: checked,
-              status: checked ? "Active" : prod.status,
-            }
-          : prod,
-      ),
-    );
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await getAdminProducts({
+        limit: 100,
+        status: statusFilter === "all" ? undefined : statusFilter,
+      });
+      setProducts(res.data.data.products);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || "Failed to load products");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Ant Design Row Context Menu template setup
-  const getActionMenu = (key: string): MenuProps => ({
-    items: [
-      { key: "view", label: "View Details" },
-      { key: "delete", label: "Delete Product", danger: true },
-    ],
-    onClick: ({ key: actionKey }) => {
-      if (actionKey === "delete") {
-        setProducts((prev) => prev.filter((p) => p.key !== key));
-      }
-    },
-  });
+  useEffect(() => {
+    loadProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
-  // Ant Design Columns mapping the layout columns exactly
-  const columns: ColumnsType<ProductRecord> = [
+  const handleToggleActive = async (record: Product, checked: boolean) => {
+    try {
+      const res = await toggleProductStatus(record._id);
+      setProducts((prev) =>
+        prev.map((p) => (p._id === record._id ? { ...p, isActive: res.data.data.product.isActive } : p)),
+      );
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  const handleApprove = async (record: Product) => {
+    try {
+      const res = await approveProduct(record._id);
+      message.success(res.data.message);
+      setProducts((prev) =>
+        prev.map((p) => (p._id === record._id ? { ...p, ...res.data.data.product } : p)),
+      );
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || "Failed to approve product");
+    }
+  };
+
+  const handleReject = (record: Product) => {
+    let reason = "";
+    Modal.confirm({
+      title: "Reject Product",
+      content: (
+        <div className="pt-2">
+          <p className="text-muted mb-2">Please provide a reason for rejection (min. 5 characters):</p>
+          <Input.TextArea
+            rows={3}
+            onChange={(e) => {
+              reason = e.target.value;
+            }}
+            placeholder="e.g., Price is too high compared to market rate"
+          />
+        </div>
+      ),
+      okText: "Reject",
+      okButtonProps: { danger: true },
+      cancelText: "Cancel",
+      onOk: async () => {
+        if (reason.trim().length < 5) {
+          message.error("Please provide a reason of at least 5 characters");
+          return Promise.reject();
+        }
+        try {
+          const res = await rejectProduct(record._id, reason.trim());
+          message.success(res.data.message);
+          setProducts((prev) =>
+            prev.map((p) => (p._id === record._id ? { ...p, ...res.data.data.product } : p)),
+          );
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || "Failed to reject product");
+          return Promise.reject();
+        }
+      },
+    });
+  };
+
+  const handleDelete = (record: Product) => {
+    Modal.confirm({
+      title: "Delete Product",
+      content: `Are you sure you want to delete "${record.name}"? This action cannot be undone.`,
+      okText: "Delete",
+      okButtonProps: { danger: true },
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteProduct(record._id);
+          setProducts((prev) => prev.filter((p) => p._id !== record._id));
+          message.success("Product deleted successfully");
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || "Failed to delete product");
+        }
+      },
+    });
+  };
+
+  const columns: ColumnsType<Product> = [
     {
       title: "PRODUCT",
       dataIndex: "name",
       key: "product",
       render: (_, record) => (
-        <div className="product-info-cell d-flex align-items-center gap-3">
-          <div
-            className="color-block-avatar flex-shrink-0"
-            style={{ backgroundColor: record.colorBlock }}
-          />
-          <div className="text-container">
-            <h5 className="prod-title mb-0">
-              {record.name} {record.variant && ` - ${record.variant}`}
-            </h5>
-          </div>
+        <div className="product-info-cell">
+          <h5 className="prod-title mb-0">{record.name}</h5>
+          {record.brand && <span className="text-muted small">{record.brand}</span>}
         </div>
       ),
     },
@@ -146,36 +157,13 @@ const ProductsTable: React.FC = () => {
       title: "CATEGORY",
       dataIndex: "category",
       key: "category",
-      render: (cat) => (
-        <span className={`category-tag tag-${cat.toLowerCase()}`}>{cat}</span>
-      ),
-    },
-    {
-      title: "PRICE",
-      dataIndex: "price",
-      key: "price",
-      render: (price) => (
-        <span className="price-text">₹{price.toLocaleString("en-IN")}</span>
-      ),
-    },
-    {
-      title: "STOCK",
-      dataIndex: "stock",
-      key: "stock",
-      render: (stock) => (
-        <span className={`stock-text ${stock <= 5 ? "critical-alert" : ""}`}>
-          {stock}
-        </span>
-      ),
+      render: (category) => <span className="category-tag">{category?.name}</span>,
     },
     {
       title: "STATUS",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const type = status === "Active" ? "active-pill" : "lowstock-pill";
-        return <Tag className={`status-pill-tag ${type}`}>{status}</Tag>;
-      },
+      dataIndex: "approvalStatus",
+      key: "approvalStatus",
+      render: (status) => <Tag color={statusColors[status]}>{status.toUpperCase()}</Tag>,
     },
     {
       title: "ACTIVE",
@@ -184,10 +172,17 @@ const ProductsTable: React.FC = () => {
       render: (isActive, record) => (
         <Switch
           checked={isActive}
-          onChange={(checked) => handleToggleActive(record.key, checked)}
+          disabled={record.approvalStatus !== "approved"}
+          onChange={(checked) => handleToggleActive(record, checked)}
           className="custom-switch-toggle"
         />
       ),
+    },
+    {
+      title: "CREATED",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => new Date(date).toLocaleDateString("en-IN"),
     },
     {
       title: "ACTIONS",
@@ -195,63 +190,56 @@ const ProductsTable: React.FC = () => {
       align: "right",
       render: (_, record) => (
         <div className="actions-wrapper d-inline-flex align-items-center gap-2">
-          <Button icon={<EditOutlined />} className="btn-edit-action">
+          <Button
+            icon={<EditOutlined />}
+            className="btn-edit-action"
+            onClick={() => navigate(`/products/edit/${record._id}`)}
+          >
             Edit
           </Button>
-          <Dropdown
-            menu={getActionMenu(record.key)}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <Button
-              icon={<MoreOutlined />}
-              className="btn-more-dots"
-              type="text"
-            />
-          </Dropdown>
+          {record.approvalStatus === "pending" && (
+            <>
+              <Button onClick={() => handleApprove(record)}>Approve</Button>
+              <Button danger onClick={() => handleReject(record)}>
+                Reject
+              </Button>
+            </>
+          )}
+          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)} />
         </div>
       ),
     },
   ];
 
-  // Filtering implementation framework logic
   const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchText.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "All Categories" || p.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const term = searchText.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(term) ||
+      (p.category?.name || "").toLowerCase().includes(term) ||
+      (p.brand || "").toLowerCase().includes(term)
+    );
   });
-
-  const handleAddNewProduct = () => {
-    navigate("/products/add-new-product");
-  };
 
   return (
     <div className="products-inventory-panel p-4">
-      {/* Title Header Section Line Block */}
       <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-3">
         <div>
           <h1 className="inventory-view-title mb-1">Products</h1>
-          <p className="inventory-view-desc text-muted mb-0">
-            Manage your product inventory
-          </p>
+          <p className="inventory-view-desc text-muted mb-0">Manage your product inventory</p>
         </div>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           className="add-product-btn-brand"
-          onClick={() => handleAddNewProduct()}
+          onClick={() => navigate("/products/add-new-product")}
         >
           Add Product
         </Button>
       </div>
 
-      {/* Control Filter Options Toolbar Container Block */}
       <div className="filter-controls-strip p-3 mb-4 d-flex flex-column flex-md-row justify-content-between gap-3 align-items-stretch align-items-md-center">
         <Input
-          placeholder="Search products by name, category..."
+          placeholder="Search products by name, category, brand..."
           prefix={<SearchOutlined className="search-icon-muted" />}
           className="search-input-field flex-grow-1"
           value={searchText}
@@ -259,54 +247,34 @@ const ProductsTable: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap">
           <Select
-            value={categoryFilter}
-            onChange={(val) => setCategoryFilter(val)}
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val)}
             className="category-dropdown-select"
             suffixIcon={<FilterOutlined />}
             options={[
-              { value: "All Categories", label: "All Categories" },
-              { value: "Sarees", label: "Sarees" },
-              { value: "Churidars", label: "Churidars" },
-              { value: "Jewellery", label: "Jewellery" },
+              { value: "all", label: "All Statuses" },
+              { value: "pending", label: "Pending" },
+              { value: "approved", label: "Approved" },
+              { value: "rejected", label: "Rejected" },
             ]}
           />
-          <Button icon={<FilterOutlined />} className="more-filters-btn">
-            More Filters
-          </Button>
         </div>
       </div>
 
-      {/* Main Framework Table Section Module Layout */}
       <div className="table-card-wrapper bg-white">
         <Table
-          rowSelection={{ type: "checkbox" }}
           columns={columns}
           dataSource={filteredProducts}
+          rowKey="_id"
+          loading={loading}
           pagination={{
             position: ["bottomRight"],
-            defaultPageSize: 5,
-            showSizeChanger: false,
-            itemRender: (_, type, originalElement) => {
-              if (type === "prev")
-                return (
-                  <Button size="small" className="pag-btn">
-                    Previous
-                  </Button>
-                );
-              if (type === "next")
-                return (
-                  <Button size="small" className="pag-btn">
-                    Next
-                  </Button>
-                );
-              return originalElement;
-            },
+            defaultPageSize: 10,
           }}
           className="custom-inventory-table"
           footer={() => (
             <span className="footer-counter-lbl text-muted">
-              Showing 1 to {filteredProducts.length} of {products.length}{" "}
-              products
+              Showing {filteredProducts.length} of {products.length} products
             </span>
           )}
         />

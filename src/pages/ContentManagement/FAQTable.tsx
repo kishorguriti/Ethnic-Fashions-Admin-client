@@ -1,91 +1,78 @@
-import React, { useState } from 'react';
-import { Table, Button, Tag, Space, Modal, Form, Input, Select, message } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Tag, Space, Modal, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-
-// TypeScript schema definition for FAQ data mapping
-interface FAQItem {
-  key: string;
-  question: string;
-  category: 'Returns' | 'Shipping' | 'Orders';
-  status: 'Published' | 'Draft';
-}
-
-const initialFAQs: FAQItem[] = [
-  {
-    key: '1',
-    question: 'What is your return policy?',
-    category: 'Returns',
-    status: 'Published',
-  },
-  {
-    key: '2',
-    question: 'How long does shipping take?',
-    category: 'Shipping',
-    status: 'Published',
-  },
-  {
-    key: '3',
-    question: 'Do you ship internationally?',
-    category: 'Shipping',
-    status: 'Published',
-  },
-  {
-    key: '4',
-    question: 'How do I track my order?',
-    category: 'Orders',
-    status: 'Published',
-  },
-];
+import { getAdminFaqs, deleteFaq, type Faq } from '../../services/faqApi';
+import AddFAQModal from './AddFAQModal';
 
 const FAQTable: React.FC = () => {
-  const [faqs, setFaqs] = useState<FAQItem[]>(initialFAQs);
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form] = Form.useForm();
+  const [editingFaq, setEditingFaq] = useState<Faq | null>(null);
 
-  // Dynamic Event Actions
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCancelModal = () => {
-    form.resetFields();
+  const fetchFaqs = async () => {
+    setLoading(true);
+    try {
+      const res = await getAdminFaqs();
+      setFaqs(res.data.data.faqs);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Failed to load FAQs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFaqs();
+  }, []);
+
+  const handleOpenModal = () => {
+    setEditingFaq(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (faq: Faq) => {
+    setEditingFaq(faq);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditingFaq(null);
     setIsModalOpen(false);
   };
 
-  const handleCreateFAQ = (values: Omit<FAQItem, 'key'>) => {
-    const newFAQ: FAQItem = {
-      key: Date.now().toString(),
-      ...values,
-    };
-    setFaqs(prev => [...prev, newFAQ]);
-    message.success('FAQ successfully added to table catalog!');
-    handleCancelModal();
+  const handleSuccess = () => {
+    fetchFaqs();
   };
 
-  const handleEdit = (question: string) => {
-    message.info(`Opening structural composer window for: "${question}"`);
-  };
-
-  const handleDelete = (key: string, question: string) => {
+  const handleDelete = (faq: Faq) => {
     Modal.confirm({
       title: 'Are you absolutely sure you want to remove this FAQ entry?',
-      content: `"${question}" will be permanently removed from content layers.`,
+      content: `"${faq.question}" will be permanently removed from content layers.`,
       okText: 'Delete Entry',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk() {
-        setFaqs(prev => prev.filter(item => item.key !== key));
-        message.error(`Removed: "${question}"`);
+      onOk: async () => {
+        try {
+          await deleteFaq(faq._id);
+          message.success(`Removed: "${faq.question}"`);
+          setFaqs((prev) => prev.filter((item) => item._id !== faq._id));
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || 'Failed to delete FAQ');
+        }
       },
     });
   };
 
   // Ant Design Table Columns Configuration Structure
-  const columns: ColumnsType<FAQItem> = [
+  const columns: ColumnsType<Faq> = [
     {
       title: 'Question',
       dataIndex: 'question',
       key: 'question',
       className: 'text-dark-custom fw-semibold column-question',
-      width: '45%',
+      width: '40%',
     },
     {
       title: 'Category',
@@ -101,11 +88,18 @@ const FAQTable: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       className: 'column-status',
-      render: (status: 'Published' | 'Draft') => (
-        <Tag className={`faq-status-tag tag-${status.toLowerCase()}`}>
-          {status}
+      render: (status: 'published' | 'draft') => (
+        <Tag className={`faq-status-tag tag-${status === 'published' ? 'published' : 'draft'}`}>
+          {status === 'published' ? 'Published' : 'Draft'}
         </Tag>
       ),
+    },
+    {
+      title: 'Order',
+      dataIndex: 'displayOrder',
+      key: 'displayOrder',
+      className: 'column-order',
+      width: 80,
     },
     {
       title: 'Actions',
@@ -114,18 +108,18 @@ const FAQTable: React.FC = () => {
       className: 'column-actions',
       render: (_, record) => (
         <Space size="middle" className="actions-button-wrapper">
-          <Button 
-            icon={<EditOutlined />} 
+          <Button
+            icon={<EditOutlined />}
             className="btn-action btn-edit"
-            onClick={() => handleEdit(record.question)}
+            onClick={() => handleEdit(record)}
           >
             Edit
           </Button>
-          <Button 
-            icon={<DeleteOutlined />} 
-            danger 
+          <Button
+            icon={<DeleteOutlined />}
+            danger
             className="btn-action btn-delete"
-            onClick={() => handleDelete(record.key, record.question)}
+            onClick={() => handleDelete(record)}
           />
         </Space>
       ),
@@ -136,9 +130,9 @@ const FAQTable: React.FC = () => {
     <div className="container-flid my-2 faq-manager">
       {/* Top Creation Row Actions Wrapper */}
       <div className="d-flex justify-content-end mb-4">
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
           className="btn-purple-primary"
           onClick={handleOpenModal}
         >
@@ -151,56 +145,20 @@ const FAQTable: React.FC = () => {
         <Table
           columns={columns}
           dataSource={faqs}
+          rowKey="_id"
+          loading={loading}
           pagination={false}
-          scroll={{ x: 'max-content' }} // Prevents text-wrap breaks on smaller viewports
+          scroll={{ x: 'max-content' }}
           className="custom-faq-table"
         />
       </div>
 
-      {/* Dynamic Pop-up Wizard Form Window Component */}
-      <Modal
-        title="Add New FAQ"
+      <AddFAQModal
         open={isModalOpen}
-        onCancel={handleCancelModal}
-        footer={null}
-        destroyOnClose
-      >
-        <Form form={form} layout="vertical" onFinish={handleCreateFAQ} className="mt-3">
-          <Form.Item
-            name="question"
-            label="Question Text"
-            rules={[{ required: true, message: 'Please inputs your question' }]}
-          >
-            <Input placeholder="e.g., What is your return policy?" />
-          </Form.Item>
-
-          <Form.Item
-            name="category"
-            label="Category Topic"
-            rules={[{ required: true, message: 'Please pick a category group' }]}
-          >
-            <Select placeholder="Choose target context group">
-              <Select.Option value="Returns">Returns</Select.Option>
-              <Select.Option value="Shipping">Shipping</Select.Option>
-              <Select.Option value="Orders">Orders</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="status" label="Publishing Status" initialValue="Published">
-            <Select>
-              <Select.Option value="Published">Published</Select.Option>
-              <Select.Option value="Draft">Draft</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <div className="d-flex justify-content-end gap-2 mt-4">
-            <Button onClick={handleCancelModal}>Cancel</Button>
-            <Button type="primary" htmlType="submit" className="btn-modal-submit">
-              Save FAQ
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+        onClose={handleCloseModal}
+        onSuccess={handleSuccess}
+        editingFaq={editingFaq}
+      />
     </div>
   );
 };

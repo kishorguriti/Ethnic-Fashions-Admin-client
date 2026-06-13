@@ -35,7 +35,7 @@ export default function Dashboard() {
       <h3 className="section-subtitle mb-4">Overview</h3>
       <OverviewCards />
 
-      <h3 className="section-subtitle mt-5 mb-4">Revenue & Orders Trends</h3>
+      <h3 className="section-subtitle mt-5 mb-4">Customer Growth Trends</h3>
       <ChartsSection />
       <PerformanceInsights />
       <RecentAdminActivity />

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Progress } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Progress, message } from 'antd';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,18 +11,11 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { getCustomerGrowth, getWishlistInsights, type GrowthPoint, type WishlistInsight } from '../../services/analyticsApi';
+import { getCustomerStats, type CustomerStats } from '../../services/customerApi';
 
 // Register ChartJS elements
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
-
-// TypeScript schemas
-interface TrafficSourceItem {
-  id: number;
-  sourceName: string;
-  visitors: string;
-  conversions: string;
-  conversionRate: number;
-}
 
 interface SummaryCard {
   id: number;
@@ -33,38 +26,49 @@ interface SummaryCard {
 }
 
 const GrowthTrafficDashboard: React.FC = () => {
-  
-  // 1. Traffic Sources dataset from the image layout
-  const trafficSources: TrafficSourceItem[] = [
-    { id: 1, sourceName: 'Organic Search', visitors: '12,450 visitors', conversions: '1245 conversions', conversionRate: 10 },
-    { id: 2, sourceName: 'Direct', visitors: '8,920 visitors', conversions: '892 conversions', conversionRate: 10 },
-    { id: 3, sourceName: 'Social Media', visitors: '6,780 visitors', conversions: '475 conversions', conversionRate: 7 },
-    { id: 4, sourceName: 'Email Campaign', visitors: '4,560 visitors', conversions: '684 conversions', conversionRate: 15 },
-    { id: 5, sourceName: 'Paid Ads', visitors: '3,240 visitors', conversions: '389 conversions', conversionRate: 12 }
-  ];
+  const [growthData, setGrowthData] = useState<GrowthPoint[]>([]);
+  const [wishlistInsights, setWishlistInsights] = useState<WishlistInsight[]>([]);
+  const [customerStats, setCustomerStats] = useState<CustomerStats | null>(null);
 
-  // 2. Performance Summary dataset from the bottom row section
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [growthRes, wishlistRes, statsRes] = await Promise.all([
+          getCustomerGrowth(),
+          getWishlistInsights(5),
+          getCustomerStats(),
+        ]);
+        setGrowthData(growthRes.data.data);
+        setWishlistInsights(wishlistRes.data.data);
+        setCustomerStats(statsRes.data.data);
+      } catch {
+        message.error('Failed to load growth & traffic data.');
+      }
+    };
+    fetchData();
+  }, []);
+
   const summaryCards: SummaryCard[] = [
-    { id: 1, title: 'Average Order Value', value: '₹4,280', subText: '+8.5% vs last month', themeClass: 'green' },
-    { id: 2, title: 'Customer Lifetime Value', value: '₹12,450', subText: 'Average per customer', themeClass: 'blue' },
-    { id: 3, title: 'Repeat Purchase Rate', value: '42.3%', subText: '+3.2% vs last month', themeClass: 'purple' }
+    { id: 1, title: 'Total Customers', value: customerStats ? customerStats.totalCustomers.toLocaleString('en-IN') : '—', subText: 'All registered customers', themeClass: 'green' },
+    { id: 2, title: 'New This Month', value: customerStats ? customerStats.newThisMonth.toLocaleString('en-IN') : '—', subText: 'Registered this month', themeClass: 'blue' },
+    { id: 3, title: 'Verified Customers', value: customerStats ? customerStats.verifiedCustomers.toLocaleString('en-IN') : '—', subText: 'Phone number verified', themeClass: 'purple' },
   ];
 
-  // 3. Customer Growth Chart Config (Line Chart)
+  // Customer Growth Chart Config (Line Chart)
   const growthChartData = {
-    labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+    labels: growthData.map((p) => p.label),
     datasets: [
       {
         label: 'Customers',
-        data: [3200, 3350, 3480, 3560, 3680, 3750, 3842],
-        borderColor: '#10b981', // Emerald green line accent from the image
+        data: growthData.map((p) => p.count),
+        borderColor: '#10b981',
         backgroundColor: '#10b981',
         pointBorderColor: '#10b981',
         pointBackgroundColor: '#ffffff',
         pointBorderWidth: 2,
         pointRadius: 5,
         pointHoverRadius: 7,
-        tension: 0.1, // Matches straight line segment look
+        tension: 0.1,
       }
     ]
   };
@@ -76,8 +80,7 @@ const GrowthTrafficDashboard: React.FC = () => {
     scales: {
       y: {
         min: 0,
-        max: 4000,
-        ticks: { stepSize: 1000, color: '#9ca3af', font: { size: 12 } },
+        ticks: { color: '#9ca3af', font: { size: 12 } },
         grid: { color: '#f3f4f6', drawTicks: false }
       },
       x: {
@@ -87,15 +90,17 @@ const GrowthTrafficDashboard: React.FC = () => {
     }
   };
 
+  const maxWishlistCount = Math.max(1, ...wishlistInsights.map((w) => w.wishlistCount));
+
   return (
     <div className="growth-traffic-panel container-fluid p-4 px-0">
-      
+
       {/* Top Main Module Heading Section */}
       <h1 className="main-section-title mb-4">Growth & Traffic</h1>
 
       {/* Row Block A: Split Layout Charts Grid */}
       <div className="row g-4 mb-5">
-        
+
         {/* Left Side: Customer Growth Canvas Card */}
         <div className="col-12 col-xl-6">
           <div className="dashboard-content-card p-4 bg-white h-100">
@@ -106,34 +111,38 @@ const GrowthTrafficDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Side: Traffic Sources Progress List Card */}
+        {/* Right Side: Top Wishlisted Products Progress List Card */}
         <div className="col-12 col-xl-6">
           <div className="dashboard-content-card p-4 bg-white h-100">
-            <h3 className="card-inner-title mb-4">Traffic Sources & Conversion</h3>
+            <h3 className="card-inner-title mb-4">Top Wishlisted Products</h3>
             <div className="traffic-progress-stack d-flex flex-column gap-3">
-              {trafficSources.map((source) => (
-                <div key={source.id} className="traffic-item-row p-3 rounded-3">
+              {wishlistInsights.length === 0 && (
+                <span className="text-muted">No wishlist activity yet.</span>
+              )}
+              {wishlistInsights.map((item) => (
+                <div key={item.productId} className="traffic-item-row p-3 rounded-3">
                   <div className="d-flex justify-content-between align-items-center mb-1">
-                    <strong className="source-name text-dark">{source.sourceName}</strong>
-                    <span className="source-visitors text-muted small">{source.visitors}</span>
+                    <strong className="source-name text-dark">{item.name}</strong>
+                    <span className="source-visitors text-muted small">{item.wishlistCount} wishlisted</span>
                   </div>
-                  
-                  {/* Ant Design custom progress layout strip mapping visual design colors */}
+
                   <div className="d-flex align-items-center gap-3">
                     <div className="flex-grow-1">
-                      <Progress 
-                        percent={source.conversionRate * 5} // Proportional scaling metric values
-                        showInfo={false} 
-                        strokeColor="#cc00a3" // Vibrant pink progress fill from your image references
+                      <Progress
+                        percent={(item.wishlistCount / maxWishlistCount) * 100}
+                        showInfo={false}
+                        strokeColor="#cc00a3"
                         trailColor="#e5e7eb"
                         strokeWidth={10}
                         className="custom-pink-bar m-0"
                       />
                     </div>
-                    <strong className="rate-text text-dark">{source.conversionRate}%</strong>
+                    <strong className="rate-text text-dark">{item.cartCount}</strong>
                   </div>
 
-                  <span className="source-conversions text-muted small d-block mt-1">{source.conversions}</span>
+                  <span className="source-conversions text-muted small d-block mt-1">
+                    {item.cartCount} in cart · {item.opportunity} opportunity score
+                  </span>
                 </div>
               ))}
             </div>

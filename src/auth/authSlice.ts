@@ -1,117 +1,137 @@
-// // // src/features/auth/authSlice.ts
-// // import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-// // import { User } from "../../types/auth";
-
-// // interface AuthState {
-// //   user: User | null;
-// // }
-
-// // const initialState: AuthState = {
-// //   user: null,
-// // };
-
-// // const authSlice = createSlice({
-// //   name: "auth",
-// //   initialState,
-// //   reducers: {
-// //     login: (state, action: PayloadAction<User>) => {
-// //       state.user = action.payload;
-// //     },
-// //     logout: (state) => {
-// //       state.user = null;
-// //     },
-// //   },
-// // });
-
-// // export const { login, logout } = authSlice.actions;
-// // export default authSlice.reducer;
-// import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-// export type Role = "admin" | "customer";
-
-// interface User {
-//   id: string;
-//   name: string;
-//   role: Role;
-// }
-
-// interface AuthState {
-//   user: User | null;
-// }
-
-// const initialState: AuthState = {
-//   user: null,
-// };
-
-// const authSlice = createSlice({
-//   name: "auth",
-//   initialState,
-//   reducers: {
-//     login: (state, action: PayloadAction<User>) => {
-//       state.user = action.payload;
-//     },
-//     logout: (state) => {
-//       state.user = null;
-//     },
-//   },
-// });
-
-// export const { login, logout } = authSlice.actions;
-// export default authSlice.reducer;
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  loginAPI,
+  verifyLoginOtpAPI,
+  resendLoginOtpAPI,
+  logoutAPI,
+} from "./authAPI";
+import { saveAuth, getAuth, clearAuth } from "./authService";
+import type { AdminUser, LoginPayload, VerifyOtpPayload } from "./types";
 
-interface User {
-  id: string;
+interface OtpStep {
   email: string;
-  role: string;
-  // role: "admin" | "customer";
+  devOtp?: string;
 }
 
 interface AuthState {
-  user: User | null;
+  user: AdminUser | null;
+  status: "idle" | "loading" | "failed";
+  error: string | null;
+  otpStep: OtpStep | null;
 }
 
 const initialState: AuthState = {
-  user: JSON.parse(localStorage.getItem("user") || "null"),
+  user: getAuth(),
+  status: "idle",
+  error: null,
+  otpStep: null,
 };
 
+// Step 1 — validates credentials and triggers an OTP send
 export const loginUser = createAsyncThunk(
   "auth/login",
-  async (data: { email: string; password: string; remember: boolean }) => {
-    const isAdmin = data.email === "admin@test.com";
-
-    const user = {
-      id: "1",
-      email: data.email,
-      role: isAdmin ? "admin" : "customer",
-    };
-
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("token", "demo-token");
-
-    return user;
+  async (data: LoginPayload, { rejectWithValue }) => {
+    try {
+      const res = await loginAPI(data);
+      return { email: res.data.data.email, devOtp: res.data.OTP };
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Invalid email or password";
+      return rejectWithValue(message);
+    }
   },
 );
+
+// Step 2 — verifies the OTP and completes the session
+export const verifyOtp = createAsyncThunk(
+  "auth/verifyOtp",
+  async (data: VerifyOtpPayload, { rejectWithValue }) => {
+    try {
+      const res = await verifyLoginOtpAPI(data);
+      const user = res.data.data.user;
+      saveAuth(user);
+      return user;
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Invalid OTP";
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const resendOtp = createAsyncThunk(
+  "auth/resendOtp",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      const res = await resendLoginOtpAPI(email);
+      return { devOtp: res.data.OTP };
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Failed to resend OTP";
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const logoutUser = createAsyncThunk("auth/logout", async () => {
+  try {
+    await logoutAPI();
+  } finally {
+    clearAuth();
+  }
+});
 
 const slice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    logout: (state) => {
-      state.user = null;
-      localStorage.clear();
+    resetOtpStep: (state) => {
+      state.otpStep = null;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(loginUser.fulfilled, (state, action) => {
-      state.user = action.payload as {
-        id: string;
-        email: string;
-        role: string;
-      };
-    });
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.otpStep = action.payload;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload as string;
+      })
+      .addCase(verifyOtp.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.user = action.payload;
+        state.otpStep = null;
+      })
+      .addCase(verifyOtp.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload as string;
+      })
+      .addCase(resendOtp.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(resendOtp.fulfilled, (state, action) => {
+        if (state.otpStep) state.otpStep.devOtp = action.payload.devOtp;
+      })
+      .addCase(resendOtp.rejected, (state, action) => {
+        state.error = action.payload as string;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.status = "idle";
+        state.otpStep = null;
+      });
   },
 });
 
-export const { logout } = slice.actions;
+export const { resetOtpStep } = slice.actions;
 export default slice.reducer;

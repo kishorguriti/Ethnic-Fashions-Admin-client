@@ -8,22 +8,31 @@ import {
 } from "@ant-design/icons";
 import Sidebar from "./Sidebar";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-// import { logout } from "../auth/authSlice";
-// import { useDispatch } from "react-redux";
+import { logoutUser } from "../auth/authSlice";
+import { useAppDispatch, useAppSelector } from "../hooks";
 
 const Layout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const location = useLocation();
-  // const navigate = useNavigate();
-  // const dispatch=useDispatch();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
 
   const adminMenuProps: MenuProps = {
     items: [
       { key: "profile", label: "My Profile" },
       { key: "settings", label: "Account Settings" },
       { type: "divider" },
-      { key: "logout", label: "Logout", danger: true},
+      { key: "logout", label: "Logout", danger: true },
     ],
+    onClick: async ({ key }) => {
+      if (key === "logout") {
+        await dispatch(logoutUser());
+        navigate("/login");
+      } else if (key === "settings") {
+        navigate("/settings");
+      }
+    },
   };
 
   return (
@@ -72,7 +81,7 @@ const Layout: React.FC = () => {
               <div className="admin-profile-pill d-flex align-items-center gap-2">
                 <Avatar icon={<UserOutlined />} className="avatar-brand-bg" />
                 <span className="profile-name-label d-none d-md-inline">
-                  Admin
+                  {user?.name || "Admin"}
                 </span>
               </div>
             </Dropdown>
