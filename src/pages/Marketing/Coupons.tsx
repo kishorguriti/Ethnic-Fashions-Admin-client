@@ -292,6 +292,7 @@ const Coupons: React.FC = () => {
             dataSource={coupons}
             rowKey="_id"
             pagination={false}
+            scroll={{ x: "max-content" }}
             className="custom-coupons-data-grid"
           />
         )}

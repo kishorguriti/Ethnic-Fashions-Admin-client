@@ -347,6 +347,7 @@ const ReturnsRefundsSummary: React.FC = () => {
           <Table
             columns={columns}
             dataSource={filteredData}
+            scroll={{ x: "max-content" }}
             pagination={{
               current: currentPage,
               onChange: (page) => setCurrentPage(page),

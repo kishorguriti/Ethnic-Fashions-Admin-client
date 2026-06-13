@@ -15,6 +15,7 @@ import {
 } from "../services/productApi";
 
 const LOW_STOCK_THRESHOLD = 5;
+const PAGE_SIZE = 10;
 
 type StockStatus = "In Stock" | "Low Stock" | "Out of Stock";
 
@@ -28,17 +29,22 @@ const InventoryManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "in" | "low" | "out">("all");
   const [inventory, setInventory] = useState<InventoryVariant[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState({ totalItemsCount: 0, lowStockCount: 0, outOfStockCount: 0 });
 
   const loadInventory = async () => {
     setLoading(true);
     try {
       const res = await getAdminVariants({
-        limit: 100,
+        page,
+        limit: PAGE_SIZE,
         search: searchQuery || undefined,
         status: selectedStatus === "all" ? undefined : selectedStatus,
       });
       setInventory(res.data.data.variants);
+      setTotal(res.data.data.total);
     } catch (err: any) {
       message.error(err?.response?.data?.message || "Failed to load inventory");
     } finally {
@@ -50,13 +56,35 @@ const InventoryManagement: React.FC = () => {
     const timer = setTimeout(loadInventory, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, selectedStatus, page]);
+
+  useEffect(() => {
+    setPage(1);
   }, [searchQuery, selectedStatus]);
 
-  const totalItemsCount = inventory.length;
-  const lowStockCount = inventory.filter(
-    (item) => item.available > 0 && item.available <= LOW_STOCK_THRESHOLD,
-  ).length;
-  const outOfStockCount = inventory.filter((item) => item.available === 0).length;
+  const loadSummary = async () => {
+    try {
+      const [lowRes, outRes, allRes] = await Promise.all([
+        getAdminVariants({ limit: 1, status: "low" }),
+        getAdminVariants({ limit: 1, status: "out" }),
+        getAdminVariants({ limit: 1 }),
+      ]);
+      setSummary({
+        totalItemsCount: allRes.data.data.total,
+        lowStockCount: lowRes.data.data.total,
+        outOfStockCount: outRes.data.data.total,
+      });
+    } catch {
+      // ignore summary load errors
+    }
+  };
+
+  useEffect(() => {
+    loadSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { totalItemsCount, lowStockCount, outOfStockCount } = summary;
 
   const handleUpdateStock = (record: InventoryVariant) => {
     let targetNewVal: number | null = record.stock;
@@ -98,6 +126,7 @@ const InventoryManagement: React.FC = () => {
             ),
           );
           message.success("Stock level updated successfully!");
+          loadSummary();
         } catch (err: any) {
           message.error(err?.response?.data?.message || "Failed to update stock");
         }
@@ -241,8 +270,27 @@ const InventoryManagement: React.FC = () => {
           dataSource={inventory}
           rowKey="_id"
           loading={loading}
-          pagination={false}
+          scroll={{ x: "max-content" }}
+          pagination={{
+            position: ["bottomRight"],
+            current: page,
+            pageSize: PAGE_SIZE,
+            total,
+            showSizeChanger: false,
+            onChange: (p) => setPage(p),
+            itemRender: (_, type, originalElement) => {
+              if (type === "prev") return <Button size="small" className="pagination-edge-btn">Previous</Button>;
+              if (type === "next") return <Button size="small" className="pagination-edge-btn">Next</Button>;
+              return originalElement;
+            },
+          }}
           className="custom-inventory-data-table"
+          footer={() => (
+            <span className="footer-counter-lbl text-muted">
+              Showing {inventory.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to{" "}
+              {Math.min(page * PAGE_SIZE, total)} of {total} items
+            </span>
+          )}
         />
       </div>
     </div>

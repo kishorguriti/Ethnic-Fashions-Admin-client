@@ -30,6 +30,7 @@ export interface Product {
   approvalStatus: ApprovalStatus;
   isActive: boolean;
   rejectionReason?: string | null;
+  thumbnail?: string | null;
   createdBy?: ProductUser;
   approvedBy?: ProductUser | null;
   createdAt: string;
@@ -151,6 +152,9 @@ export const getAdminProducts = (params?: {
 
 export const getAdminProductById = (id: string) =>
   axiosInstance.get<ProductWithVariantsResponse>(`/products/admin/${id}`);
+
+export const getAdminProductBySlug = (slug: string) =>
+  axiosInstance.get<ProductWithVariantsResponse>(`/products/admin/by-slug/${slug}`);
 
 export const createProduct = (data: CreateProductPayload) =>
   axiosInstance.post<ProductResponse>("/products", data);

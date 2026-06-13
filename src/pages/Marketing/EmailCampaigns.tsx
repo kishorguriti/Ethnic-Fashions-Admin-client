@@ -223,6 +223,7 @@ const EmailCampaignsDashboard: React.FC = () => {
           columns={columns}
           dataSource={campaigns}
           pagination={false}
+          scroll={{ x: "max-content" }}
           className="custom-campaigns-data-grid"
           //   responsive={true}
         />

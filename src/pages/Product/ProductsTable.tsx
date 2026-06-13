@@ -15,6 +15,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  PictureOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +28,12 @@ import {
   type Product,
   type ApprovalStatus,
 } from "../../services/productApi";
+import { getAdminCategories } from "../../services/categoryApi";
+
+interface CategoryOption {
+  value: string;
+  label: string;
+}
 
 const statusColors: Record<string, string> = {
   pending: "gold",
@@ -37,6 +44,8 @@ const statusColors: Record<string, string> = {
 const ProductsTable: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<ApprovalStatus | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string | "all">("all");
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -47,6 +56,7 @@ const ProductsTable: React.FC = () => {
       const res = await getAdminProducts({
         limit: 100,
         status: statusFilter === "all" ? undefined : statusFilter,
+        category: categoryFilter === "all" ? undefined : categoryFilter,
       });
       setProducts(res.data.data.products);
     } catch (err: any) {
@@ -57,9 +67,27 @@ const ProductsTable: React.FC = () => {
   };
 
   useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await getAdminCategories();
+        const flattened: CategoryOption[] = [];
+        res.data.data.categories.forEach((parent) => {
+          (parent.subcategories || []).forEach((sub) => {
+            flattened.push({ value: sub._id, label: `${parent.name} > ${sub.name}` });
+          });
+        });
+        setCategoryOptions(flattened);
+      } catch (err: any) {
+        message.error(err?.response?.data?.message || "Failed to load categories");
+      }
+    };
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [statusFilter, categoryFilter]);
 
   const handleToggleActive = async (record: Product, checked: boolean) => {
     try {
@@ -147,9 +175,18 @@ const ProductsTable: React.FC = () => {
       dataIndex: "name",
       key: "product",
       render: (_, record) => (
-        <div className="product-info-cell">
-          <h5 className="prod-title mb-0">{record.name}</h5>
-          {record.brand && <span className="text-muted small">{record.brand}</span>}
+        <div className="product-info-cell d-flex align-items-center gap-3">
+          {record.thumbnail ? (
+            <img src={record.thumbnail} alt={record.name} className="prod-thumb-img" />
+          ) : (
+            <div className="prod-thumb-placeholder d-flex align-items-center justify-content-center">
+              <PictureOutlined />
+            </div>
+          )}
+          <div className="prod-title-stack">
+            <h5 className="prod-title mb-0">{record.name}</h5>
+            {record.brand && <span className="text-muted small">{record.brand}</span>}
+          </div>
         </div>
       ),
     },
@@ -193,7 +230,7 @@ const ProductsTable: React.FC = () => {
           <Button
             icon={<EditOutlined />}
             className="btn-edit-action"
-            onClick={() => navigate(`/products/edit/${record._id}`)}
+            onClick={() => navigate(`/products/edit/${record.slug}`)}
           >
             Edit
           </Button>
@@ -247,6 +284,14 @@ const ProductsTable: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap">
           <Select
+            value={categoryFilter}
+            onChange={(val) => setCategoryFilter(val)}
+            className="category-dropdown-select"
+            suffixIcon={<FilterOutlined />}
+            popupMatchSelectWidth={false}
+            options={[{ value: "all", label: "All Categories" }, ...categoryOptions]}
+          />
+          <Select
             value={statusFilter}
             onChange={(val) => setStatusFilter(val)}
             className="category-dropdown-select"
@@ -267,9 +312,16 @@ const ProductsTable: React.FC = () => {
           dataSource={filteredProducts}
           rowKey="_id"
           loading={loading}
+          scroll={{ x: "max-content" }}
           pagination={{
             position: ["bottomRight"],
             defaultPageSize: 10,
+            showSizeChanger: false,
+            itemRender: (_, type, originalElement) => {
+              if (type === "prev") return <Button size="small" className="pagination-edge-btn">Previous</Button>;
+              if (type === "next") return <Button size="small" className="pagination-edge-btn">Next</Button>;
+              return originalElement;
+            },
           }}
           className="custom-inventory-table"
           footer={() => (

@@ -21,7 +21,7 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import {
-  getAdminProductById,
+  getAdminProductBySlug,
   createProduct,
   updateProduct,
   toggleProductStatus,
@@ -61,8 +61,8 @@ const statusColors: Record<string, string> = {
 const AddNewProduct: React.FC = () => {
   const [form] = Form.useForm<ProductFormValues>();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const isEdit = !!id;
+  const { slug: slugParam } = useParams<{ slug: string }>();
+  const isEdit = !!slugParam;
 
   const [tab, setTab] = useState("1");
   const [loading, setLoading] = useState(false);
@@ -71,6 +71,7 @@ const AddNewProduct: React.FC = () => {
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
+  const [productId, setProductId] = useState<string | null>(null);
   const [product, setProduct] = useState<ProductWithVariants | null>(null);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
 
@@ -102,12 +103,13 @@ const AddNewProduct: React.FC = () => {
     };
 
     const loadProduct = async () => {
-      if (!id) return;
+      if (!slugParam) return;
       setLoading(true);
       try {
-        const res = await getAdminProductById(id);
+        const res = await getAdminProductBySlug(slugParam);
         const p = res.data.data.product;
         setProduct(p);
+        setProductId(p._id);
         setVariants(p.variants || []);
         setSelectedCategoryId(p.category._id);
         form.setFieldsValue({
@@ -127,14 +129,14 @@ const AddNewProduct: React.FC = () => {
 
     loadCategories();
     loadProduct();
-  }, [id, form]);
+  }, [slugParam, form]);
 
   const selectedCategory = categoryOptions.find((c) => c.value === selectedCategoryId);
 
   const handleFinish = async (values: ProductFormValues) => {
     setSubmitting(true);
     try {
-      if (isEdit && id) {
+      if (isEdit && productId) {
         const payload = {
           name: values.name,
           description: values.description,
@@ -142,7 +144,7 @@ const AddNewProduct: React.FC = () => {
           tags: values.tags,
           attributes: values.attributes || {},
         };
-        const res = await updateProduct(id, payload);
+        const res = await updateProduct(productId, payload);
         message.success(res.data.message);
         setProduct((prev) => (prev ? { ...prev, ...res.data.data.product } : prev));
       } else {
@@ -156,7 +158,7 @@ const AddNewProduct: React.FC = () => {
         };
         const res = await createProduct(payload);
         message.success(res.data.message);
-        navigate(`/products/edit/${res.data.data.product._id}`);
+        navigate(`/products/edit/${res.data.data.product.slug}`);
       }
     } catch (err: any) {
       message.error(err?.response?.data?.message || "An error occurred. Please try again.");
@@ -166,9 +168,9 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleToggleActive = async (checked: boolean) => {
-    if (!id || !product) return;
+    if (!productId || !product) return;
     try {
-      const res = await toggleProductStatus(id);
+      const res = await toggleProductStatus(productId);
       setProduct({ ...product, isActive: res.data.data.product.isActive });
     } catch (err: any) {
       message.error(err?.response?.data?.message || "Failed to update status");
@@ -176,9 +178,9 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    if (!id || !product) return;
+    if (!productId || !product) return;
     try {
-      const res = await approveProduct(id);
+      const res = await approveProduct(productId);
       message.success(res.data.message);
       setProduct({ ...product, ...res.data.data.product });
     } catch (err: any) {
@@ -187,14 +189,14 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleReject = async () => {
-    if (!id || !product) return;
+    if (!productId || !product) return;
     if (rejectReason.trim().length < 5) {
       message.error("Please provide a reason of at least 5 characters");
       return;
     }
     setRejecting(true);
     try {
-      const res = await rejectProduct(id, rejectReason.trim());
+      const res = await rejectProduct(productId, rejectReason.trim());
       message.success(res.data.message);
       setProduct({ ...product, ...res.data.data.product });
       setRejectModalOpen(false);
@@ -215,7 +217,7 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleDeleteVariant = (variant: ProductVariant) => {
-    if (!id) return;
+    if (!productId) return;
     Modal.confirm({
       title: "Delete Variant",
       content: `Are you sure you want to delete the ${variant.color}${variant.size ? ` / ${variant.size}` : ""} variant?`,
@@ -224,7 +226,7 @@ const AddNewProduct: React.FC = () => {
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteVariant(id, variant._id);
+          await deleteVariant(productId, variant._id);
           setVariants((prev) => prev.filter((v) => v._id !== variant._id));
           message.success("Variant deleted successfully");
         } catch (err: any) {
@@ -239,45 +241,57 @@ const AddNewProduct: React.FC = () => {
       title: "Color",
       dataIndex: "color",
       key: "color",
+      width: 120,
     },
     {
       title: "Size",
       dataIndex: "size",
       key: "size",
+      width: 100,
       render: (size) => size || "Free Size",
     },
     {
       title: "SKU",
       dataIndex: "sku",
       key: "sku",
+      width: 140,
     },
     {
       title: "MRP",
       dataIndex: "mrp",
       key: "mrp",
+      width: 110,
+      align: "right",
       render: (mrp) => `₹${mrp.toLocaleString("en-IN")}`,
     },
     {
       title: "Selling Price",
       dataIndex: "sellingPrice",
       key: "sellingPrice",
+      width: 130,
+      align: "right",
       render: (price) => `₹${price.toLocaleString("en-IN")}`,
     },
     {
       title: "Discount",
       dataIndex: "discount",
       key: "discount",
+      width: 100,
+      align: "right",
       render: (discount) => `${discount}%`,
     },
     {
       title: "Stock",
       dataIndex: "stock",
       key: "stock",
+      width: 90,
+      align: "right",
     },
     {
       title: "Media",
       dataIndex: "media",
       key: "media",
+      width: 130,
       render: (media: ProductVariant["media"]) => (
         <div className="d-flex gap-1">
           {(media || []).slice(0, 3).map((m) => (
@@ -285,7 +299,7 @@ const AddNewProduct: React.FC = () => {
               key={m._id}
               src={m.url}
               alt="variant"
-              style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4 }}
+              className="variant-media-thumb"
             />
           ))}
         </div>
@@ -294,6 +308,7 @@ const AddNewProduct: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
+      width: 100,
       align: "right",
       render: (_, record) => (
         <div className="d-inline-flex gap-2">
@@ -467,6 +482,8 @@ const AddNewProduct: React.FC = () => {
                   dataSource={variants}
                   rowKey="_id"
                   pagination={false}
+                  scroll={{ x: "max-content" }}
+                  className="custom-variants-table"
                 />
               </div>
             )}
@@ -537,12 +554,12 @@ const AddNewProduct: React.FC = () => {
         </div>
       </Form>
 
-      {isEdit && id && (
+      {isEdit && productId && (
         <AddVariantModal
           open={variantModalOpen}
           onClose={() => setVariantModalOpen(false)}
           onSuccess={handleVariantSuccess}
-          productId={id}
+          productId={productId}
           editingVariant={editingVariant}
         />
       )}
