@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAppSelector } from "../../hooks";
 import {
   Form,
   Input,
@@ -10,6 +11,8 @@ import {
   Tag,
   Table,
   Modal,
+  Image,
+  Alert,
   message,
 } from "antd";
 import {
@@ -21,7 +24,7 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import {
-  getAdminProductById,
+  getAdminProductBySlug,
   createProduct,
   updateProduct,
   toggleProductStatus,
@@ -49,8 +52,53 @@ interface ProductFormValues {
   category: string;
   brand?: string;
   tags?: string[];
-  attributes?: Record<string, string>;
+  attributes?: Record<string, string | string[]>;
 }
+
+// Mirrors the customer-facing product gallery: a large main image with a
+// clickable thumbnail strip, so admins can review images exactly as
+// customers will see them before approving a product.
+const VariantImageGallery: React.FC<{ variant: ProductVariant }> = ({ variant }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const media = variant.media || [];
+
+  if (media.length === 0) {
+    return <p className="text-muted small mb-0">No images uploaded for this variant.</p>;
+  }
+
+  return (
+    <div className="d-flex flex-column gap-2" style={{ maxWidth: 260 }}>
+      <Image
+        src={media[Math.min(activeIndex, media.length - 1)]?.url}
+        alt={`${variant.color} ${variant.size || ""}`}
+        width={240}
+        height={240}
+        style={{ objectFit: "cover", borderRadius: 8 }}
+        preview={{ mask: "Zoom" }}
+      />
+      {media.length > 1 && (
+        <div className="d-flex gap-2 flex-wrap">
+          {media.map((m, i) => (
+            <img
+              key={m._id}
+              src={m.url}
+              alt={`${variant.color} view ${i + 1}`}
+              onClick={() => setActiveIndex(i)}
+              style={{
+                width: 48,
+                height: 48,
+                objectFit: "cover",
+                borderRadius: 4,
+                cursor: "pointer",
+                border: i === activeIndex ? "2px solid #1677ff" : "1px solid #d9d9d9",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const statusColors: Record<string, string> = {
   pending: "gold",
@@ -61,8 +109,11 @@ const statusColors: Record<string, string> = {
 const AddNewProduct: React.FC = () => {
   const [form] = Form.useForm<ProductFormValues>();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const isEdit = !!id;
+  const { slug } = useParams<{ slug: string }>();
+  const isEdit = !!slug;
+
+  const role = useAppSelector((state) => state.auth.user?.role);
+  const canApprove = role === "super_admin" || role === "admin";
 
   const [tab, setTab] = useState("1");
   const [loading, setLoading] = useState(false);
@@ -102,21 +153,25 @@ const AddNewProduct: React.FC = () => {
     };
 
     const loadProduct = async () => {
-      if (!id) return;
+      if (!slug) return;
       setLoading(true);
       try {
-        const res = await getAdminProductById(id);
+        const res = await getAdminProductBySlug(slug);
         const p = res.data.data.product;
         setProduct(p);
         setVariants(p.variants || []);
         setSelectedCategoryId(p.category._id);
+        const attributes = { ...(p.attributes || {}) };
+        if (attributes.occasion !== undefined && !Array.isArray(attributes.occasion)) {
+          attributes.occasion = attributes.occasion ? [attributes.occasion] : [];
+        }
         form.setFieldsValue({
           name: p.name,
           description: p.description,
           category: p.category._id,
           brand: p.brand,
           tags: p.tags || [],
-          attributes: p.attributes || {},
+          attributes,
         });
       } catch (err: any) {
         message.error(err?.response?.data?.message || "Failed to load product");
@@ -127,14 +182,14 @@ const AddNewProduct: React.FC = () => {
 
     loadCategories();
     loadProduct();
-  }, [id, form]);
+  }, [slug, form]);
 
   const selectedCategory = categoryOptions.find((c) => c.value === selectedCategoryId);
 
   const handleFinish = async (values: ProductFormValues) => {
     setSubmitting(true);
     try {
-      if (isEdit && id) {
+      if (isEdit && product) {
         const payload = {
           name: values.name,
           description: values.description,
@@ -142,7 +197,7 @@ const AddNewProduct: React.FC = () => {
           tags: values.tags,
           attributes: values.attributes || {},
         };
-        const res = await updateProduct(id, payload);
+        const res = await updateProduct(product._id, payload);
         message.success(res.data.message);
         setProduct((prev) => (prev ? { ...prev, ...res.data.data.product } : prev));
       } else {
@@ -156,7 +211,7 @@ const AddNewProduct: React.FC = () => {
         };
         const res = await createProduct(payload);
         message.success(res.data.message);
-        navigate(`/products/edit/${res.data.data.product._id}`);
+        navigate(`/products/edit/${res.data.data.product.slug}`);
       }
     } catch (err: any) {
       message.error(err?.response?.data?.message || "An error occurred. Please try again.");
@@ -166,9 +221,9 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleToggleActive = async (checked: boolean) => {
-    if (!id || !product) return;
+    if (!product) return;
     try {
-      const res = await toggleProductStatus(id);
+      const res = await toggleProductStatus(product._id);
       setProduct({ ...product, isActive: res.data.data.product.isActive });
     } catch (err: any) {
       message.error(err?.response?.data?.message || "Failed to update status");
@@ -176,9 +231,9 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    if (!id || !product) return;
+    if (!product) return;
     try {
-      const res = await approveProduct(id);
+      const res = await approveProduct(product._id);
       message.success(res.data.message);
       setProduct({ ...product, ...res.data.data.product });
     } catch (err: any) {
@@ -187,14 +242,14 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleReject = async () => {
-    if (!id || !product) return;
+    if (!product) return;
     if (rejectReason.trim().length < 5) {
       message.error("Please provide a reason of at least 5 characters");
       return;
     }
     setRejecting(true);
     try {
-      const res = await rejectProduct(id, rejectReason.trim());
+      const res = await rejectProduct(product._id, rejectReason.trim());
       message.success(res.data.message);
       setProduct({ ...product, ...res.data.data.product });
       setRejectModalOpen(false);
@@ -215,7 +270,7 @@ const AddNewProduct: React.FC = () => {
   };
 
   const handleDeleteVariant = (variant: ProductVariant) => {
-    if (!id) return;
+    if (!product) return;
     Modal.confirm({
       title: "Delete Variant",
       content: `Are you sure you want to delete the ${variant.color}${variant.size ? ` / ${variant.size}` : ""} variant?`,
@@ -224,7 +279,7 @@ const AddNewProduct: React.FC = () => {
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteVariant(id, variant._id);
+          await deleteVariant(product._id, variant._id);
           setVariants((prev) => prev.filter((v) => v._id !== variant._id));
           message.success("Variant deleted successfully");
         } catch (err: any) {
@@ -332,6 +387,30 @@ const AddNewProduct: React.FC = () => {
         </p>
       </div>
 
+      {isEdit && product?.pendingChanges && (
+        <Alert
+          className="mb-4"
+          type="info"
+          showIcon
+          message={canApprove ? "Edit pending review" : "Your changes are pending review"}
+          description={
+            canApprove
+              ? "This product is live. The partner has submitted edits below — the live listing shown to customers will not change until you approve or reject these changes."
+              : "You've submitted changes to this live product. Customers continue to see the current approved details until admin/super_admin approves your edits."
+          }
+        />
+      )}
+
+      {isEdit && !canApprove && product?.approvalStatus === "approved" && !product?.pendingChanges && product?.rejectionReason && (
+        <Alert
+          className="mb-4"
+          type="warning"
+          showIcon
+          message="Your last submitted edit was rejected"
+          description={`Reason: ${product.rejectionReason}. Your live listing is unaffected — you can edit and resubmit.`}
+        />
+      )}
+
       <Form
         form={form}
         layout="vertical"
@@ -411,7 +490,16 @@ const AddNewProduct: React.FC = () => {
                       {selectedCategory.filterableAttributes.map((attr) => (
                         <div className="col-12 col-md-6" key={attr.key}>
                           <Form.Item label={attr.label} name={["attributes", attr.key]}>
-                            {attr.type === "select" || attr.type === "color" ? (
+                            {attr.key === "occasion" ? (
+                              <Select
+                                mode="multiple"
+                                placeholder={`Select ${attr.label}`}
+                                className="custom-form-select"
+                                size="large"
+                                options={attr.options.map((opt) => ({ value: opt, label: opt }))}
+                                allowClear
+                              />
+                            ) : attr.type === "select" || attr.type === "color" ? (
                               <Select
                                 placeholder={`Select ${attr.label}`}
                                 className="custom-form-select"
@@ -447,29 +535,6 @@ const AddNewProduct: React.FC = () => {
               )}
             </div>
 
-            {isEdit && (
-              <div className="form-card-surface card-info-box p-4 mt-4">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h3 className="card-inner-heading mb-0">Variants</h3>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => {
-                      setEditingVariant(null);
-                      setVariantModalOpen(true);
-                    }}
-                  >
-                    Add Variant
-                  </Button>
-                </div>
-                <Table
-                  columns={variantColumns}
-                  dataSource={variants}
-                  rowKey="_id"
-                  pagination={false}
-                />
-              </div>
-            )}
           </div>
 
           <div className="col-12 col-lg-4">
@@ -485,10 +550,33 @@ const AddNewProduct: React.FC = () => {
                     </Tag>
                   </div>
 
+                  {canApprove && product.createdBy && (
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                      <span className="toggle-label-text">Product Owner</span>
+                      <span className="text-end">
+                        {product.createdBy.name || product.createdBy.email}
+                      </span>
+                    </div>
+                  )}
+
                   {product.approvalStatus === "rejected" && product.rejectionReason && (
                     <p className="text-muted small mb-3">
                       Reason: {product.rejectionReason}
                     </p>
+                  )}
+
+                  {canApprove && product.pendingChanges && (
+                    <div className="mb-3">
+                      <span className="toggle-label-text d-block mb-2">Proposed Changes</span>
+                      <div className="p-2 rounded" style={{ background: "#f5f5f5", fontSize: 12 }}>
+                        {Object.entries(product.pendingChanges).map(([key, value]) => (
+                          <div key={key} className="mb-1">
+                            <strong>{key}:</strong>{" "}
+                            {Array.isArray(value) ? value.join(", ") : String(value ?? "—")}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
 
                   <div className="d-flex align-items-center justify-content-between mb-3">
@@ -501,7 +589,7 @@ const AddNewProduct: React.FC = () => {
                     />
                   </div>
 
-                  {product.approvalStatus === "pending" && (
+                  {canApprove && (product.approvalStatus === "pending" || product.pendingChanges) && (
                     <div className="d-flex gap-2 mt-3">
                       <Button type="primary" className="flex-grow-1" onClick={handleApprove}>
                         Approve
@@ -535,14 +623,79 @@ const AddNewProduct: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {isEdit && (
+          <div className="row g-4 mt-4">
+            <div className="col-12">
+              <div className="form-card-surface card-info-box p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h3 className="card-inner-heading mb-0">Variants</h3>
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                      setEditingVariant(null);
+                      setVariantModalOpen(true);
+                    }}
+                  >
+                    Add Variant
+                  </Button>
+                </div>
+                <Table
+                  className="variants-table"
+                  columns={variantColumns}
+                  dataSource={variants}
+                  rowKey="_id"
+                  pagination={false}
+                  scroll={{ x: "max-content" }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isEdit && canApprove && variants.length > 0 && (
+          <div className="row g-4 mt-4">
+            <div className="col-12">
+              <div className="form-card-surface card-info-box p-4">
+                <h3 className="card-inner-heading mb-4">Product Images (Customer Preview)</h3>
+                <div className="row g-4">
+                  {variants.map((variant) => (
+                    <div className="col-12 col-md-6 col-lg-4" key={variant._id}>
+                      <div className="d-flex flex-column gap-2">
+                        <span className="fw-semibold">
+                          {variant.color}{variant.size ? ` / ${variant.size}` : ""}
+                        </span>
+                        <VariantImageGallery variant={variant} />
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="price-current">
+                            ₹{variant.sellingPrice.toLocaleString("en-IN")}
+                          </span>
+                          {variant.mrp > variant.sellingPrice && (
+                            <>
+                              <span className="text-muted text-decoration-line-through">
+                                ₹{variant.mrp.toLocaleString("en-IN")}
+                              </span>
+                              <Tag color="volcano">{variant.discount}% OFF</Tag>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Form>
 
-      {isEdit && id && (
+      {isEdit && product && (
         <AddVariantModal
           open={variantModalOpen}
           onClose={() => setVariantModalOpen(false)}
           onSuccess={handleVariantSuccess}
-          productId={id}
+          productId={product._id}
           editingVariant={editingVariant}
         />
       )}

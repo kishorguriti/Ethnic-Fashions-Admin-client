@@ -18,6 +18,8 @@ import AnalyticsDashboard from "../pages/Analytics/AnalyticsDashboard";
 import StoreSettings from "../pages/Settings";
 import { NotificationManagement } from "../pages/Notifications/NotificationManagement";
 import ContentManagement from "../pages/ContentManagement/CMSManager";
+import PartnersTable from "../pages/Partners/PartnersTable";
+import PendingApprovals from "../pages/Approvals/PendingApprovals";
 // import ShoppingCart from "../features/cart/ShoppingCart";
 
 export default function AppRoutes() {
@@ -28,7 +30,7 @@ export default function AppRoutes() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="products/add-new-product" element={<AddNewProduct />} />
-          <Route path="products/edit/:id" element={<AddNewProduct />} />
+          <Route path="products/edit/:slug" element={<AddNewProduct />} />
           {/* <Route path="products" element={<ProductCollection />} /> */}
           <Route path="products" element={<ProductsTable />} />
           <Route path="categories" element={<CategoriesManagement />} />
@@ -48,6 +50,8 @@ export default function AppRoutes() {
           <Route path="settings" element={<StoreSettings />} />
           <Route path="notifications" element={<NotificationManagement />} />
           <Route path="content-management" element={<ContentManagement />} />
+          <Route path="partners" element={<PartnersTable />} />
+          <Route path="pending-approvals" element={<PendingApprovals />} />
         </Route>
       </Route>
       <Route path="/login" element={<Login />} />
