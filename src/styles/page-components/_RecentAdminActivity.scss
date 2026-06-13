@@ -1,0 +1,66 @@
+// Custom layout brand token mappings
+$bg-header-pink: #fdf2f8; 
+$brand-primary-pink: #cc00a3; // Vibrant matching avatar tone
+$text-main-navy: #1f2937;
+$text-muted-gray: #6b7280;
+$border-subtle: #edf0f5;
+
+.recent-admin-activity-card {
+  background: #ffffff;
+  border: 1px solid $border-subtle;
+  border-radius: 16px;
+  overflow: hidden; // Keeps header styling locked inside border curves
+  box-shadow: 0px 1px 3px 0px #0000001A !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  max-width: 420px; // Sets structural card alignment bounds matching layout proportions
+  border: 0.8px solid #E5E7EB !important;
+
+  .activity-card-header {
+    background-color: $bg-header-pink;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.1);
+
+    .header-title-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.01em;
+    }
+  }
+
+  .activity-card-body {
+    .activity-list-item {
+      &:not(:last-child) {
+        border-bottom: 1px solid #f9fafb !important;
+      }
+
+      // Overrides default avatar color blocks for deep matching pink profile indicators
+      .admin-avatar-pink {
+        background-color: $brand-primary-pink !important;
+        color: #ffffff !important;
+        font-size: 12px;
+        width: 32px;
+        height: 32px;
+      }
+
+      .activity-text-wrapper {
+        font-size: 13px;
+        line-height: 1.5;
+        
+        .action-base-text {
+          color: $text-main-navy;
+          font-weight: 500;
+        }
+
+        .action-target-bold {
+          color: #000000;
+          font-weight: 600;
+        }
+      }
+
+      .activity-timestamp-lbl {
+        font-size: 11px;
+        color: $text-muted-gray;
+      }
+    }
+  }
+}

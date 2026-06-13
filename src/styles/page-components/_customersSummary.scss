@@ -1,0 +1,103 @@
+// Brand Theme Constants mapping exact style design image colors
+$brand-purple-main: #a100e6; // Deep vibrant purple matching header buttons
+$color-text-navy: #0e1726;
+$color-border-subtle: #edf1f5;
+
+.customers-summary-container {
+    background-color: #fafbfe;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    .main-section-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: $color-text-navy;
+        letter-spacing: -0.015em;
+    }
+
+    .sub-section-desc {
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    // Primary Email Campaign Button Styling Customizations
+    .send-campaign-brand-btn {
+        background-color: $brand-purple-main;
+        border-color: $brand-purple-main;
+        border-radius: 8px;
+        height: 42px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #ffffff;
+        padding: 0 20px;
+        box-shadow: 0 4px 10px rgba(161, 0, 230, 0.15);
+        transition: all 0.2s ease-in-out;
+
+        &:hover,
+        &:focus {
+            background-color: #8500bd !important;
+            border-color: #8500bd !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 14px rgba(161, 0, 230, 0.25);
+        }
+    }
+
+    // Individual KPI Summary Cards Structural Logic
+    .kpi-surface-card {
+        background-color: #ffffff;
+        // border: 1px solid $color-border-subtle;
+        border-radius: 14px;
+        // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+        transition: transform 0.2s ease;
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+
+        &:hover {
+            transform: translateY(-2px);
+        }
+
+        .kpi-card-title {
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: -0.005em;
+        }
+
+        .kpi-card-numeric {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+
+            // Color mapping tokens matching each column palette from image
+            &.theme-black {
+                color: #111827;
+            }
+
+            &.theme-purple {
+                color: #9333ea;
+            }
+
+            // Distinct Violet VIP Customer indicator
+            &.theme-blue {
+                color: #0066ff;
+            }
+
+            // Distinct Blue Monthly New indicator
+            &.theme-green {
+                color: #16a34a;
+            }
+
+            // Distinct Green Currency Value indicator
+        }
+
+        .kpi-card-subtext {
+            font-size: 12px;
+            color: #8792a2;
+            font-weight: 500;
+
+            // First column green subtext highlight match
+            &.highlight-trend-up {
+                color: #16a34a;
+                font-weight: 600;
+            }
+        }
+    }
+}

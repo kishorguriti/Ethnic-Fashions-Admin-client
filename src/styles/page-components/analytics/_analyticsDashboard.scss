@@ -1,0 +1,139 @@
+// Brand Theme Palettes Design Variables
+$color-text-navy: #111827;
+$color-border-subtle: #E5E7EB;
+
+// Status Accent Badge Colors
+$tint-green: #effaf3;  $txt-green: #11a75c;
+$tint-blue: #eff6ff;   $txt-blue: #2563eb;
+$tint-orange: #fff7ed; $txt-orange: #ea580c;
+$tint-purple: #faf5ff; $txt-purple: #9333ea;
+
+.analytics-view-panel {
+  background-color: #fafbfe;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  .main-panel-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: $color-text-navy;
+    letter-spacing: -0.015em;
+  }
+
+  .sub-panel-desc { font-size: 14px; }
+
+  .section-inner-heading {
+    font-size: 16px;
+    font-weight: 700;
+    color: $color-text-navy;
+    letter-spacing: -0.01em;
+  }
+
+  // Export Header Action Button Style
+  .export-report-btn {
+    border-radius: 8px;
+    border-color: #d1d5db;
+    color: #374151;
+    height: 38px;
+    font-size: 13px;
+    padding: 0 16px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    &:hover, &:focus {
+      border-color: $txt-purple !important;
+      color: $txt-purple !important;
+    }
+  }
+
+  // Telemetry Summary Surface Card Elements
+  .kpi-surface-card {
+    background-color: #ffffff;
+    // border: 1px solid $color-border-subtle;
+    border-radius: 14px;
+    // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+    box-shadow: 0px 1px 3px 0px #0000001A !important;
+    border: 0.8px solid #E5E7EB !important;
+
+    .icon-avatar-shell {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      font-size: 18px;
+
+      // Color maps corresponding to status keys from your image
+      &.shell-green  { background-color: $tint-green;  color: $txt-green; }
+      &.shell-blue   { background-color: $tint-blue;   color: $txt-blue; }
+      &.shell-orange { background-color: $tint-orange; color: $txt-orange; }
+      &.shell-purple { background-color: $tint-purple; color: $txt-purple; }
+    }
+
+    .card-lbl { font-size: 13px; font-weight: 500; }
+    .card-numeric-value { font-size: 26px; font-weight: 700; color: #111827; letter-spacing: -0.01em; }
+    
+    .card-trend-footnote {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+
+      &.colored-trend {
+        color: $txt-green;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // Graphical Trend Container Cards
+  .analytics-chart-card {
+    border: 1px solid $color-border-subtle;
+    border-radius: 14px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+    height: 100%;
+
+    .chart-inner-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: $color-text-navy;
+    }
+
+    .chart-canvas-box {
+      height: 200px;
+      position: relative;
+      width: 100%;
+
+      &.vertical-bar-canvas {
+        height: 340px;
+      }
+
+      .doughnut-sizing-container {
+        width: 180px;
+        height: 180px;
+      }
+    }
+
+    // Legend item bar shapes
+    .legend-list-row {
+      background-color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .legend-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+      }
+
+      .legend-revenue {
+        font-size: 14px;
+        color: $color-text-navy;
+      }
+    }
+  }
+}

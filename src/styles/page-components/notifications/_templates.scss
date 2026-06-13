@@ -1,0 +1,88 @@
+// Colors extracted from your layout
+$color-purple-primary: #8b5cf6; // Bright vibrant purple seen on 'Create Template'
+$color-purple-hover: #7c3aed;
+$color-text-title: #0f172a;     // Deep dark charcoal for card headers
+$color-text-body: #64748b;      // Mid-tone gray for description content
+$color-border-card: #e2e8f0;    // Fine slate border line 
+$color-btn-border: #cbd5e1;
+
+.template-dashboard {
+  
+  // Header Action button overrides
+  .btn-create-template {
+    background-color: $color-purple-primary !important;
+    border-color: $color-purple-primary !important;
+    border-radius: 8px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    
+    &:hover {
+      background-color: $color-purple-hover !important;
+      border-color: $color-purple-hover !important;
+    }
+
+    // Adjusting the icon path rotation slightly to match the telegram-style paper plane arrow
+    .anticon {
+      transform: rotate(-45deg) translateY(-2px);
+    }
+  }
+
+  // Card Structure and Overrides
+  .template-card {
+    border: 1px solid $color-border-card !important;
+    border-radius: 12px !important;
+    box-shadow: none;
+    transition: box-shadow 0.2s ease-in-out;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .ant-card-body {
+      padding: 24px !important;
+    }
+
+    .card-title-text {
+      color: $color-text-title;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .card-desc-text {
+      color: $color-text-body;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    // Card Footer Buttons
+    .btn-use-template {
+      border: 1px solid $color-btn-border;
+      color: $color-text-title;
+      font-weight: 500;
+      border-radius: 6px;
+      height: 38px;
+
+      &:hover {
+        color: $color-purple-primary !important;
+        border-color: $color-purple-primary !important;
+      }
+    }
+
+    .btn-edit-template {
+      border: 1px solid $color-btn-border;
+      color: $color-text-title;
+      font-weight: 500;
+      border-radius: 6px;
+      height: 38px;
+      padding-left: 16px;
+      padding-right: 16px;
+
+      &:hover {
+        color: $color-purple-primary !important;
+        border-color: $color-purple-primary !important;
+      }
+    }
+  }
+}

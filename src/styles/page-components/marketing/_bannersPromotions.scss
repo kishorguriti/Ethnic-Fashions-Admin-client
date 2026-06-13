@@ -1,0 +1,94 @@
+// Brand Theme Constants mapping style palettes exactly from your design image
+$brand-purple-vibrant: #9c00ff; // Core primary purple code from image buttons
+$color-border-clean: #E5E7EB;
+$color-text-navy: #111827;
+
+.banners-promotions-dashboard {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  // Upper main action button customizations
+  .add-banner-brand-btn {
+    background-color: $brand-purple-vibrant;
+    border-color: $brand-purple-vibrant;
+    border-radius: 8px;
+    height: 42px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(156, 0, 255, 0.2);
+    transition: opacity 0.2s ease-in-out;
+
+    &:hover, &:focus {
+      background-color: #8200d6 !important;
+      border-color: #8200d6 !important;
+      opacity: 0.95;
+    }
+  }
+
+  // Core Banner Promotion Grid Surface Block Cards
+  .banner-promotion-card {
+    border-radius: 16px;
+    // border-color: $color-border-clean !important;
+    // box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.005);
+    transition: transform 0.2s ease;
+            box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    // Upper gradient rendering bounds matching presentation image look
+    .banner-preview-canvas {
+      height: 180px;
+      width: 100%;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+    }
+
+    .banner-card-body {
+      .banner-main-title {
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+
+      .banner-placement-lbl {
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      // Ant Design custom Switch overrule states matching black toggle shapes from view
+      .custom-banner-toggle {
+        &.ant-switch-checked {
+          background-color: #111827 !important; // Dark charcoal color check state from layout
+        }
+      }
+
+      // Lower control row actions
+      .btn-action-edit {
+        border-radius: 8px;
+        border-color: #d1d5db;
+        color: #374151;
+        height: 38px;
+        font-size: 13px;
+
+        &:hover {
+          border-color: $brand-purple-vibrant !important;
+          color: $brand-purple-vibrant !important;
+        }
+      }
+
+      .btn-action-trash {
+        border-radius: 8px;
+        border-color: #fca5a5;
+        color: #ef4444;
+        background-color: #fff5f5;
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+
+        &:hover {
+          background-color: #fee2e2 !important;
+          border-color: #ef4444 !important;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+// Custom layout brand style tokens
+$brand-purple-vibrant: #9e00ff; // Vibrant primary purple from the image button
+$color-text-charcoal: #111827;
+$color-input-surface-tint: #f4f5f7; // Muted gray base color matching inputs
+$color-border-subtle: #edf0f5;
+
+.add-category-modal-override {
+  .ant-modal-content {
+    border-radius: 16px !important; // Matches the curve details
+    padding: 32px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  // Closes close button focus state parameters cleanly
+  .ant-modal-close {
+    top: 24px;
+    right: 24px;
+    color: #9ca3af;
+    
+    &:hover {
+      color: $color-text-charcoal;
+      background-color: #f3f4f6;
+    }
+  }
+
+  .modal-inner-content {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    .modal-headline {
+      font-size: 20px;
+      font-weight: 700;
+      color: $color-text-charcoal;
+      letter-spacing: -0.01em;
+    }
+
+    // Input form title layout structure properties
+    .ant-form-item-label > label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    // Custom capsule inputs matching image styles
+    .custom-capsule-input {
+      background-color: $color-input-surface-tint !important;
+      border: 1px solid transparent !important;
+      border-radius: 8px !important;
+      font-size: 14px;
+      padding: 10px 14px;
+      transition: all 0.2s ease-in-out;
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+
+      &:hover, &:focus, &-focused {
+        background-color: #ffffff !important;
+        border-color: $brand-purple-vibrant !important;
+        box-shadow: 0 0 0 2px rgba(158, 0, 255, 0.1) !important;
+      }
+    }
+
+    .custom-textarea {
+      resize: none;
+      padding-top: 12px;
+    }
+
+    // Dynamic brand primary confirmation layout actions button
+    .brand-submit-action-btn {
+      background-color: $brand-purple-vibrant !important;
+      border-color: $brand-purple-vibrant !important;
+      border-radius: 8px;
+      height: 48px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(158, 0, 255, 0.2);
+      transition: opacity 0.2s ease;
+
+      &:hover, &:focus {
+        opacity: 0.9;
+        background-color: $brand-purple-vibrant !important;
+      }
+    }
+  }
+}
+
+// Global modal backdrop overlay adjustment rule override
+.ant-modal-wrap {
+  background-color: rgba(17, 24, 39, 0.45) !important; // Pinned soft slate dimming
+  backdrop-filter: blur(1px);
+  // z-index: 1200 ;
+}

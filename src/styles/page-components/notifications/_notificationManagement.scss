@@ -1,0 +1,188 @@
+// Color Variables
+$primary-purple: #7000FF;
+$bg-light: #F8F9FA;
+$border-color: #E2E8F0;
+$text-dark: #1A202C;
+$text-muted: #718096;
+$success-green: #38A169;
+
+.notification-dashboard {
+  background-color: $bg-light;
+  min-height: 100vh;
+  color: $text-dark;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  .dashboard-header {
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    p {
+      color: $text-muted;
+      font-size: 14px;
+    }
+  }
+
+  .stat-card {
+    background: #ffffff;
+    border: 1px solid $border-color;
+    border-radius: 12px;
+    padding: 24px;
+    height: 100%;
+
+    .stat-label {
+      font-size: 14px;
+      color: $text-muted;
+      margin-left: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+
+    .stat-subtext {
+      font-size: 12px;
+      color: $text-muted;
+
+      &.positive {
+        color: $success-green;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .nav-tabs-container {
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 24px;
+
+    .ant-tabs-nav {
+      margin-bottom: 0;
+      &::before {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .content-card {
+    background: #ffffff;
+    border: 1px solid $border-color;
+    border-radius: 12px;
+    padding: 32px;
+    height: 100%;
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+  }
+
+  // Form custom overrides
+  .custom-form {
+    .ant-form-item-label label {
+      font-weight: 500;
+      color: $text-dark;
+    }
+    
+    .ant-input, .ant-select-selector {
+      border-radius: 6px !important;
+      background-color: #FAFBFD !important;
+    }
+  }
+
+  // Live Preview Section
+  .preview-box {
+    background: #FCFCFD;
+    border: 1px dashed $border-color;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+
+    .preview-icon-wrapper {
+      background: $primary-purple;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .preview-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 2px;
+      word-break: break-word;
+    }
+
+    .preview-msg {
+      color: $text-muted;
+      font-size: 13px;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .preview-time {
+      font-size: 11px;
+      color: #A0AEC0;
+    }
+  }
+
+  // Quick Stats Section
+  .quick-stats-list {
+    .quick-stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #F1F5F9;
+      font-size: 14px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .qs-label {
+        color: $text-muted;
+      }
+
+      .qs-value {
+        font-weight: 600;
+      }
+    }
+  }
+
+  // Buttons
+  .btn-primary-purple {
+    background-color: $primary-purple;
+    border-color: $primary-purple;
+    color: white;
+    font-weight: 500;
+    
+    &:hover, &:focus {
+    //   background-color: darken($primary-purple, 5%) !important;
+    //   border-color: darken($primary-purple, 5%) !important;
+      color: white !important;
+    }
+  }
+
+  .btn-secondary-draft {
+    background-color: transparent;
+    border-color: $border-color;
+    color: $text-dark;
+    font-weight: 500;
+
+    &:hover {
+      border-color: $text-muted !important;
+      color: $text-dark !important;
+    }
+  }
+}
+

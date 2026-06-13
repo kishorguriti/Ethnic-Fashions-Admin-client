@@ -1,0 +1,222 @@
+// Custom brand palette design tokens
+$color-purple-accent: #9e00ff; // Vibrant brand purple from image
+$color-bg-light: #f9fafc;
+$color-card-surface: #ffffff;
+$color-text-navy: #111827;
+$color-input-tint: #f3f4f6;
+$brand-purple-base: #a800e6;
+$text-main-charcoal: #374151;
+
+.add-product-container {
+    background-color: $color-bg-light;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    // Header navigation configurations
+    .header-navigation-row {
+        .back-btn {
+            font-size: 14px;
+            font-weight: 600;
+            color: $color-text-navy;
+            cursor: pointer;
+            transition: opacity 0.2s;
+
+            &:hover {
+                opacity: 0.7;
+            }
+        }
+
+        .main-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: $color-text-navy;
+        }
+
+        .subtitle-text {
+            font-size: 14px;
+        }
+    }
+
+    // Generic card surface container blocks
+    .form-card-surface {
+        background-color: $color-card-surface;
+        border-radius: 12px;
+        border: 1px solid #edf1f6;
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+        border: 0.8px solid #E5E7EB !important;
+
+        .card-inner-heading {
+            font-size: 16px;
+            font-weight: 700;
+            color: $color-text-navy;
+        }
+    }
+
+    // Ant Design Tab adjustments
+    .custom-form-tabs {
+        .ant-tabs-nav::before {
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .ant-tabs-tab {
+            padding-bottom: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #9ca3af;
+
+            &-active .ant-tabs-tab-btn {
+                color: $color-purple-accent !important;
+            }
+        }
+
+        .ant-tabs-ink-bar {
+            background: $color-purple-accent !important;
+            height: 3px !important;
+        }
+    }
+
+    // Ant Design Form element global overrides
+    .ant-form-item-label>label {
+        font-weight: 600;
+        color: $color-text-navy;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    // Muted gray capsule inputs matching image styles
+    .custom-form-input,
+    .custom-form-select .ant-select-selector {
+        background-color: $color-input-tint !important;
+        border: 1px solid transparent !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+
+        &:hover,
+        &:focus,
+        &-focused {
+            background-color: #ffffff !important;
+            border-color: $color-purple-accent !important;
+        }
+    }
+
+    .custom-textarea {
+        padding: 12px;
+    }
+
+    // Drag and Drop interface aesthetics
+    .custom-drag-uploader {
+        .ant-upload {
+            background-color: #ffffff !important;
+            border: 2px dashed #d1d5db !important;
+            border-radius: 10px !important;
+            transition: border-color 0.2s;
+
+            &:hover {
+                border-color: $color-purple-accent !important;
+            }
+        }
+
+        .upload-icon-arrow {
+            font-size: 28px;
+            color: #9ca3af;
+        }
+
+        .upload-main-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .upload-sub-text {
+            font-size: 11px;
+        }
+    }
+
+    // Grid box layout placeholders
+    .preview-placeholder-square {
+        height: 96px;
+        background-color: $color-input-tint;
+        border-radius: 8px;
+        border: 1px solid transparent;
+
+        .empty-filler-box {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    // Status panel rules
+    .toggle-label-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .custom-form-switch.ant-switch-checked {
+        background-color: #111827 !important; // Dark charcoal matching toggle look
+    }
+
+    // Submission stack button blocks
+    .brand-submit-btn {
+        background-color: $color-purple-accent !important;
+        border-color: $color-purple-accent !important;
+        border-radius: 8px;
+        font-weight: 600;
+        height: 46px;
+        font-size: 14px;
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+
+    .brand-cancel-btn {
+        border-radius: 8px;
+        height: 46px;
+        font-weight: 600;
+        font-size: 14px;
+        border-color: #E5E7EB;
+        color: #4b5563;
+        background-color: transparent;
+
+        &:hover {
+            background-color: #f3f4f6 !important;
+            color: #111827 !important;
+        }
+    }
+}
+
+// Dashed border structure card window frame
+.empty-state-dashed-box {
+    background-color: #ffffff;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 12px;
+    min-height: 280px;
+
+    // Translucent soft purple circular logo ring shape
+    .icon-badge-circle {
+        width: 54px;
+        height: 54px;
+        background-color: rgba(168, 0, 230, 0.06);
+        border-radius: 50%;
+        transform: rotate(-45deg); // Matches the angled presentation in image
+
+        .badge-tag-icon {
+            font-size: 22px;
+            color: $brand-purple-base;
+        }
+    }
+
+    .empty-state-main-msg {
+        font-size: 15px;
+        font-weight: 600;
+        color: $text-main-charcoal;
+        letter-spacing: -0.01em;
+    }
+
+    .empty-state-sub-instruction {
+        font-size: 13px;
+        max-width: 320px;
+        line-height: 1.5;
+    }
+}

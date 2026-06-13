@@ -1,0 +1,159 @@
+// $sidebar-bg: #ffffff;
+// $sidebar-border: #edf0f5;
+// $nav-active-bg: #fdf2f8;
+// $nav-active-text: #e62490;
+
+// .dashboard-sidebar {
+//   width: 260px;
+//   background-color: $sidebar-bg;
+//   border-right: 1px solid $sidebar-border;
+//   transition: width 0.2s cubic-bezier(0.2, 0, 0, 1);
+//   z-index: 100;
+
+//   &.collapsed {
+//     width: 80px;
+
+//     .nav-item-link, .logout-action-btn {
+//       justify-content: center;
+//       padding: 10px 0 !important;
+//     }
+//   }
+
+//   .brand-gradient-dot {
+//     width: 32px;
+//     height: 32px;
+//     background: linear-gradient(135deg, #a800e6 0%, #ff007f 100%);
+//     border-radius: 8px;
+//   }
+
+//   .brand-title-text {
+//     font-size: 16px;
+//     font-weight: 700;
+//     color: #111827;
+//   }
+
+//   .collapse-toggle-btn {
+//     border: none;
+//     background: #f3f4f6;
+//     width: 24px;
+//     height: 24px;
+//     border-radius: 6px;
+//     font-size: 11px;
+//     color: #6b7280;
+//     &:hover { background: #e5e7eb; }
+//   }
+
+//   .nav-item-link {
+//     border-radius: 8px;
+//     color: #6b7280;
+//     cursor: pointer;
+//     font-size: 14px;
+//     font-weight: 500;
+//     transition: all 0.15s ease-in-out;
+
+//     .nav-icon-span { font-size: 18px; }
+
+//     &:hover {
+//       background-color: #f9fafb;
+//       color: #111827;
+//     }
+
+//     &.active {
+//       background-color: $nav-active-bg;
+//       color: $nav-active-text;
+//       font-weight: 600;
+//     }
+//   }
+// }
+
+$sidebar-bg: #ffffff;
+$sidebar-border: #edf0f5;
+$nav-active-bg: #fdf2f8;
+$nav-active-text: #e62490;
+$primary-gradient:  linear-gradient(90deg, #9810FA 0%, #E60076 100%);
+
+
+.dashboard-sidebar {
+    width: 260px;
+    background-color: $sidebar-bg;
+    border-right: 1px solid $sidebar-border;
+    transition: width 0.2s cubic-bezier(0.2, 0, 0, 1);
+    z-index: 1000; // Ensures it overlays main content cleanly
+
+    &.collapsed {
+        width: 80px;
+
+        .nav-item-link {
+            justify-content: center;
+            padding: 10px 0 !important;
+        }
+    }
+
+    .brand-gradient-dot {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #a800e6 0%, #ff007f 100%);
+        border-radius: 8px;
+    }
+
+    .brand-title-text {
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .collapse-toggle-btn {
+        border: none;
+        background: #f3f4f6;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        font-size: 11px;
+        color: #6b7280;
+
+        &:hover {
+            background: #e5e7eb;
+        }
+    }
+
+    // Pure CSS clean scrollbar styling for the center panel
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #e5e7eb transparent;
+
+        &::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+    }
+
+    .nav-item-link {
+        border-radius: 8px;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.15s ease-in-out;
+        padding: 10px 8px;
+
+
+        .nav-icon-span {
+            font-size: 18px;
+        }
+
+        &:hover {
+            background-color: #f9fafb;
+            color: #9810FA;
+        }
+
+        &.active {
+            background: $primary-gradient;
+            color: #fff;
+            font-weight: 600;
+        }
+    }
+}

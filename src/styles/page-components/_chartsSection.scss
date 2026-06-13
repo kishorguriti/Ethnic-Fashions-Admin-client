@@ -1,0 +1,19 @@
+.chart-card-wrapper {
+  background: #ffffff;
+  border: 1px solid #edf0f5;
+  border-radius: 14px;
+  box-shadow: 0px 1px 3px 0px #0000001A !important;
+  border: 0.8px solid #E5E7EB !important;
+
+  .chart-inner-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .chart-canvas-container {
+    height: 280px;
+    position: relative;
+    width: 100%;
+  }
+}

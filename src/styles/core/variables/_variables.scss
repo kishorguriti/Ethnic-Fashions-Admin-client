@@ -1,0 +1,28 @@
+// Brand Colors
+$primary-purple: #8e2de2;
+$secondary-blue: #4a00e0;
+$festive-orange: #ff4e50;
+$festive-yellow: #f9d423;
+$text-muted: #6c757d;
+$accent-pink: #f209a2;
+// $Primary-gradient: linear-gradient(90deg, #155DFC 0%, #9810FA 50%, #F6339A 100%);
+
+
+/// Admin Theme
+/// 
+// Brand Theme Variables
+$bg-light-pink: #fdf8f9;
+$text-dark-navy: #1a1e27;
+$text-muted-gray: #717b8c;
+$input-bg-color: #F3F3F5;
+$input-border-color: #D1D5DC;
+
+// Primary Gradient mapping the image buttons and headers
+$primary-gradient: linear-gradient(135deg, #a800e6 0%, #ff007f 100%);
+
+// Custom Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

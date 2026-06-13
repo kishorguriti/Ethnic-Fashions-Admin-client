@@ -1,0 +1,84 @@
+@mixin basicBtnStyles {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+    max-width: 179.05px;
+    min-width: 130px;
+    height: 37.60px;
+    border-radius: 26.84px;
+}
+
+.shop-by-category-btn,
+.shop-by-category-btn:hover {
+    border: 0.8px solid #BEDBFF !important;
+    background: linear-gradient(90deg, #DBEAFE 0%, #F3E8FF 100%) !important;
+    color: #155DFC !important;
+    @include basicBtnStyles;
+
+
+}
+
+.premium-fabric-btn,
+.premium-fabric-btn:hover {
+    border: 0.8px solid #E9D4FF !important;
+    background: linear-gradient(90deg, #F3E8FF 0%, #FCE7F3 100%) !important;
+    color: #9810FA !important;
+    @include basicBtnStyles;
+
+}
+
+.best-seller-btn,
+.best-seller-btn:hover {
+    @include basicBtnStyles;
+    background: linear-gradient(90deg, #CEFAFE 0%, #DBEAFE 100%) !important;
+    border: 0.8px solid #A2F4FD !important;
+    color: #0092B8 !important;
+
+
+}
+
+.veiw-all-btn,
+.veiw-all-btn:hover {
+    @include basicBtnStyles;
+    border: 1.6px solid #3B82F6 !important;
+    color: #3B82F6 !important;
+    background: transparent !important;
+}
+
+.add-to-cart-btn {
+    @include basicBtnStyles;
+    border: 1.6px solid #fff !important;
+    color: #000 !important;
+    background: #fff !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-weight: 500;
+    font-size: 12px;
+
+    &:hover {
+        color: #fff !important;
+        background: #155DFC !important;
+    }
+}
+
+.hero-explore-collection-btn {
+    border: 0.8px solid #BEDBFF !important;
+    background: #fff !important;
+    color: #155DFC !important;
+    @include basicBtnStyles;
+
+    &:hover {
+        background: #155DFC !important;
+        color: #fff !important;
+    }
+}
+
+.new-arrivals-btn {
+    &:hover {
+        border: 0.8px solid #fff !important;
+        // background: #155DFC !important;
+        color: #fff !important;
+        height: 40px !important;
+    }
+}

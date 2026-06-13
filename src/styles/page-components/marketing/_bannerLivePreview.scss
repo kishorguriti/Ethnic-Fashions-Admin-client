@@ -1,0 +1,252 @@
+.banner-live-preview {
+  position: sticky;
+  top: 0;
+
+  .preview-heading {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .preview-sub-label {
+    font-size: 12px;
+  }
+
+  .preview-viewport {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .preview-frame {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #fff;
+  }
+
+  // ── Desktop frame: wide aspect ratio ──────────────────────────────
+  .preview-desktop .preview-frame {
+    aspect-ratio: 16 / 8;
+  }
+
+  // ── Mobile frame: narrow phone-like aspect ratio ──────────────────
+  .preview-mobile {
+    .preview-frame {
+      aspect-ratio: 9 / 14;
+      max-width: 220px;
+    }
+
+    .preview-title,
+    .preview-title-serif {
+      font-size: 1.1rem !important;
+    }
+
+    .preview-subtitle,
+    .preview-description {
+      font-size: 11px !important;
+    }
+
+    .preview-btn {
+      font-size: 10px !important;
+      padding: 4px 12px !important;
+    }
+
+    .preview-badge,
+    .preview-badge-offer {
+      font-size: 10px !important;
+      padding: 3px 10px !important;
+    }
+
+    .preview-icon-wrapper {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 14px !important;
+    }
+  }
+
+  .preview-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  .preview-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .preview-content {
+    position: relative;
+    z-index: 2;
+    padding: 16px;
+    width: 100%;
+  }
+
+  // ── Hero placement ─────────────────────────────────────────────────
+  .preview-hero {
+    background: linear-gradient(115deg, #8e2de2 10%, #a236f0 50%, #f209a2 90%);
+  }
+
+  .preview-content-hero {
+    text-align: left;
+
+    .preview-badge {
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .preview-title {
+      font-size: clamp(1.3rem, 4vw, 1.8rem);
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .preview-subtitle {
+      font-size: 12px;
+      opacity: 0.88;
+      margin-bottom: 12px;
+      max-width: 80%;
+    }
+
+    .preview-cta-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  }
+
+  // ── Promotional placement ───────────────────────────────────────────
+  .preview-promotional {
+    background: linear-gradient(135deg, #a100ff 0%, #ff007a 50%, #ff6a00 100%);
+  }
+
+  .preview-content-promo {
+    text-align: center;
+
+    .preview-icon-wrapper {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      font-size: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .preview-badge-offer {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      padding: 4px 12px;
+      font-size: 11px;
+      margin-bottom: 10px;
+      backdrop-filter: blur(5px);
+
+      .preview-sparkle {
+        color: #ffd700;
+      }
+    }
+
+    .preview-title-serif {
+      font-family: Georgia, serif;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      margin-bottom: 6px;
+    }
+
+    .preview-description {
+      font-size: 12px;
+      opacity: 0.9;
+      max-width: 320px;
+      margin: 0 auto 12px;
+    }
+  }
+
+  // ── Sub banner placement ────────────────────────────────────────────
+  .preview-sub_banner {
+    background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%);
+
+    .preview-frame-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+  }
+
+  .preview-content-sub {
+    text-align: left;
+
+    .preview-badge {
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .preview-title-sub {
+      font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .preview-subtitle {
+      font-size: 12px;
+      opacity: 0.88;
+      margin-bottom: 10px;
+    }
+  }
+
+  // ── Shared elements ──────────────────────────────────────────────────
+  .preview-badge,
+  .preview-badge-offer {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    padding: 4px 14px;
+    font-size: 12px;
+  }
+
+  .preview-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .preview-btn-primary {
+    background: #ffffff;
+    color: #8e2de2;
+  }
+
+  .preview-btn-white {
+    background: #ffffff;
+    color: #a100ff;
+  }
+
+  .preview-btn-ghost {
+    background: transparent;
+    border: 1px solid currentColor;
+  }
+}

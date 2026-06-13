@@ -1,0 +1,149 @@
+// Component System Variables
+$color-cms-dark: #0f172a;
+$color-cms-muted: #64748b;
+$color-purple-theme: #9333ea; // Purple color used across pills, banners and toggle actions
+$color-purple-hover: #7e22ce;
+$color-border: #e2e8f0;
+$color-delete-red: #ef4444;
+
+.cms-dashboard {
+  .cms-title {
+    color: $color-cms-dark;
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+
+  .text-muted-custom {
+    color: $color-cms-muted !important;
+  }
+
+  // Navigation Pill Controls Overrides
+  .custom-pill-group {
+    background-color: #f8fafc;
+    padding: 4px;
+    border-radius: 100px;
+    border: 1px solid $color-border;
+    display: inline-flex;
+    flex-wrap: wrap;
+
+    .navigation-pill {
+      border: none !important;
+      background: transparent !important;
+      border-radius: 100px !important;
+      color: $color-cms-muted;
+      font-weight: 500;
+      height: 36px;
+      line-index: 36px;
+      padding: 0 20px;
+      box-shadow: none !important;
+
+      &::before {
+        display: none !important; // Removes Ant Design standard separator bars
+      }
+
+      &.ant-radio-button-wrapper-checked {
+        background-color: #ffffff !important;
+        color: $color-cms-dark !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+      }
+    }
+  }
+
+  // Purple Action Buttons
+  .btn-purple-action {
+    background-color: $color-purple-theme !important;
+    border-color: $color-purple-theme !important;
+    border-radius: 8px;
+    font-weight: 600;
+    height: 40px;
+
+    &:hover {
+      background-color: $color-purple-hover !important;
+      border-color: $color-purple-hover !important;
+    }
+  }
+
+  // Dashboard Item Cards Styling
+  .cms-card {
+    border: 1px solid $color-border !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    box-shadow: none;
+
+    .ant-card-body {
+      padding: 0 !important; // Controlled directly by sub-sections
+    }
+
+    // Dynamic Gradient Visual block placeholder
+    .card-image-placeholder {
+      background: linear-gradient(135deg, #fae8ff 0%, #e0e7ff 100%);
+      height: 160px;
+      width: 100%;
+      border-bottom: 1px solid $color-border;
+
+      .placeholder-eye-icon {
+        font-size: 2.5rem;
+        color: #94a3b8;
+      }
+    }
+
+    .card-item-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: $color-cms-dark;
+    }
+
+    .card-item-category {
+      font-size: 0.9rem;
+    }
+
+    .card-item-views {
+      font-size: 0.85rem;
+      font-weight: 500;
+      
+      .meta-icon {
+        font-size: 0.95rem;
+      }
+    }
+
+    // Standard Toggle Custom Color Fixes
+    .custom-toggle-switch.ant-switch-checked {
+      background-color: $color-cms-dark !important;
+    }
+
+    // Card Lower Buttons bar block
+    .card-actions-footer {
+      border-top: 1px solid $color-border;
+      background-color: #ffffff;
+
+      .btn-action-edit {
+        border-color: $color-border;
+        border-radius: 6px;
+        color: $color-cms-dark;
+        font-weight: 500;
+        height: 36px;
+
+        &:hover {
+          border-color: $color-cms-dark !important;
+          color: $color-cms-dark !important;
+        }
+      }
+
+      .btn-action-delete {
+        border-color: #fee2e2;
+        background-color: #fff5f5;
+        color: $color-delete-red;
+        border-radius: 6px;
+        height: 36px;
+        width: 36px;
+        padding: 0;
+
+        &:hover {
+          background-color: $color-delete-red !important;
+          color: #ffffff !important;
+          border-color: $color-delete-red !important;
+        }
+      }
+    }
+  }
+}

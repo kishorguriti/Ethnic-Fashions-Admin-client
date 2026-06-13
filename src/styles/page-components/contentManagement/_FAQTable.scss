@@ -1,0 +1,140 @@
+// System Layout Variables
+$color-dark: #0f172a;            // Core headers dark navy-black
+$color-muted: #64748b;           // Column descriptions text slate
+$color-purple: #9333ea;          // Image signature purple token choice
+$color-purple-hover: #7e22ce;
+$color-border-row: #E5E7EB;       // Soft gray borders bounding row scopes
+$color-tag-dark-bg: #090d16;     // Match layout tone for active Published tags
+$color-category-bg: #f8fafc;     // Soft background tone accent behind Category pills
+$color-danger-red: #dc2626;
+
+.faq-manager {
+  // Brand Header Buttons Style Override
+  .btn-purple-primary {
+    background-color: $color-purple !important;
+    border-color: $color-purple !important;
+    border-radius: 8px;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 20px;
+
+    &:hover {
+      background-color: $color-purple-hover !important;
+      border-color: $color-purple-hover !important;
+    }
+  }
+
+  // Shell Box Container Structural Layout 
+  .table-card {
+    border: 1px solid $color-border-row;
+  }
+
+  // Core Table Internal Modifiers
+  .custom-faq-table {
+    .ant-table {
+      background: transparent;
+    }
+
+    // Header Structural Layout Modifiers
+    .ant-table-thead > tr > th {
+      background-color: transparent !important;
+      color: $color-muted !important;
+      font-weight: 500;
+      border-bottom: 1px solid $color-border-row;
+      
+      &::before {
+        display: none !important; // Removes AntD default vertical partition lines
+      }
+    }
+
+    // Row Block Sizing Properties
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid $color-border-row;
+      padding: 20px 16px;
+      vertical-align: middle;
+    }
+
+    .ant-table-tbody > tr:last-child > td {
+      border-bottom: none !important;
+    }
+
+    // Typography Helper Rules
+    .text-dark-custom {
+      color: $color-dark;
+      font-size: 1.05rem;
+    }
+  }
+
+  // Category Tag Pills Overrides
+  .category-pill-badge {
+    background-color: $color-category-bg !important;
+    color: $color-dark !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  // Dynamic Status Tags Rules
+  .faq-status-tag {
+    border: none;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-weight: 600;
+    font-size: 13px;
+
+    &.tag-published {
+      background-color: $color-tag-dark-bg !important;
+      color: #ffffff !important;
+    }
+    
+    &.tag-draft {
+      background-color: #e2e8f0 !important;
+      color: $color-dark !important;
+    }
+  }
+
+  // Row Operational Button Interfaces 
+  .actions-button-wrapper {
+    .btn-action {
+      border: 1px solid #e2e8f0;
+      color: $color-dark;
+      font-weight: 500;
+      border-radius: 6px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+
+      &:hover {
+        color: $color-purple !important;
+        border-color: $color-purple !important;
+      }
+    }
+
+    .btn-delete {
+      color: $color-danger-red;
+      border-color: #fca5a5;
+      background-color: #fef2f2;
+      padding: 0 12px;
+
+      &:hover {
+        background-color: $color-danger-red !important;
+        color: #ffffff !important;
+        border-color: $color-danger-red !important;
+      }
+    }
+  }
+}
+
+// Modal Form Styles
+.btn-modal-submit {
+  background-color: $color-purple !important;
+  border-color: $color-purple !important;
+  
+  &:hover {
+    background-color: $color-purple-hover !important;
+  }
+}
