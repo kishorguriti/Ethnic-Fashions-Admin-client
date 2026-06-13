@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Input,
-  Select,
   Button,
   Switch,
-  Tag,
   Modal,
+  Tag,
+  Tooltip,
+  Select,
   message,
 } from "antd";
+import { useAppSelector } from "../../hooks";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -22,10 +24,7 @@ import {
   getAdminProducts,
   deleteProduct,
   toggleProductStatus,
-  approveProduct,
-  rejectProduct,
   type Product,
-  type ApprovalStatus,
 } from "../../services/productApi";
 
 const statusColors: Record<string, string> = {
@@ -36,17 +35,22 @@ const statusColors: Record<string, string> = {
 
 const ProductsTable: React.FC = () => {
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ApprovalStatus | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [partnerFilter, setPartnerFilter] = useState("all");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const role = useAppSelector((state) => state.auth.user?.role);
+  const canApprove = role === "super_admin" || role === "admin";
 
   const loadProducts = async () => {
     setLoading(true);
     try {
       const res = await getAdminProducts({
         limit: 100,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        // Admins see the live catalog (approved only); partners see all
+        // of their own submissions so they can track pending/rejected items
+        status: role === "partner" ? undefined : "approved",
       });
       setProducts(res.data.data.products);
     } catch (err: any) {
@@ -59,7 +63,7 @@ const ProductsTable: React.FC = () => {
   useEffect(() => {
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [role]);
 
   const handleToggleActive = async (record: Product, checked: boolean) => {
     try {
@@ -70,56 +74,6 @@ const ProductsTable: React.FC = () => {
     } catch (err: any) {
       message.error(err?.response?.data?.message || "Failed to update status");
     }
-  };
-
-  const handleApprove = async (record: Product) => {
-    try {
-      const res = await approveProduct(record._id);
-      message.success(res.data.message);
-      setProducts((prev) =>
-        prev.map((p) => (p._id === record._id ? { ...p, ...res.data.data.product } : p)),
-      );
-    } catch (err: any) {
-      message.error(err?.response?.data?.message || "Failed to approve product");
-    }
-  };
-
-  const handleReject = (record: Product) => {
-    let reason = "";
-    Modal.confirm({
-      title: "Reject Product",
-      content: (
-        <div className="pt-2">
-          <p className="text-muted mb-2">Please provide a reason for rejection (min. 5 characters):</p>
-          <Input.TextArea
-            rows={3}
-            onChange={(e) => {
-              reason = e.target.value;
-            }}
-            placeholder="e.g., Price is too high compared to market rate"
-          />
-        </div>
-      ),
-      okText: "Reject",
-      okButtonProps: { danger: true },
-      cancelText: "Cancel",
-      onOk: async () => {
-        if (reason.trim().length < 5) {
-          message.error("Please provide a reason of at least 5 characters");
-          return Promise.reject();
-        }
-        try {
-          const res = await rejectProduct(record._id, reason.trim());
-          message.success(res.data.message);
-          setProducts((prev) =>
-            prev.map((p) => (p._id === record._id ? { ...p, ...res.data.data.product } : p)),
-          );
-        } catch (err: any) {
-          message.error(err?.response?.data?.message || "Failed to reject product");
-          return Promise.reject();
-        }
-      },
-    });
   };
 
   const handleDelete = (record: Product) => {
@@ -159,12 +113,42 @@ const ProductsTable: React.FC = () => {
       key: "category",
       render: (category) => <span className="category-tag">{category?.name}</span>,
     },
-    {
-      title: "STATUS",
-      dataIndex: "approvalStatus",
-      key: "approvalStatus",
-      render: (status) => <Tag color={statusColors[status]}>{status.toUpperCase()}</Tag>,
-    },
+    ...(canApprove
+      ? [
+          {
+            title: "PARTNER",
+            key: "partner",
+            render: (_: unknown, record: Product) => (
+              <div>
+                <div>{record.createdBy?.name || "—"}</div>
+                <small className="text-muted">{record.createdBy?.email}</small>
+              </div>
+            ),
+          },
+        ]
+      : []),
+    ...(role === "partner"
+      ? [
+          {
+            title: "STATUS",
+            key: "approvalStatus",
+            render: (_: unknown, record: Product) => {
+              const tag = record.pendingChanges ? (
+                <Tag color="blue">EDIT PENDING REVIEW</Tag>
+              ) : (
+                <Tag color={statusColors[record.approvalStatus]}>
+                  {record.approvalStatus.toUpperCase()}
+                </Tag>
+              );
+              return record.approvalStatus === "rejected" && record.rejectionReason ? (
+                <Tooltip title={record.rejectionReason}>{tag}</Tooltip>
+              ) : (
+                tag
+              );
+            },
+          },
+        ]
+      : []),
     {
       title: "ACTIVE",
       dataIndex: "isActive",
@@ -193,31 +177,49 @@ const ProductsTable: React.FC = () => {
           <Button
             icon={<EditOutlined />}
             className="btn-edit-action"
-            onClick={() => navigate(`/products/edit/${record._id}`)}
+            onClick={() => navigate(`/products/edit/${record.slug}`)}
           >
             Edit
           </Button>
-          {record.approvalStatus === "pending" && (
-            <>
-              <Button onClick={() => handleApprove(record)}>Approve</Button>
-              <Button danger onClick={() => handleReject(record)}>
-                Reject
-              </Button>
-            </>
+          {canApprove && (
+            <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)} />
           )}
-          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)} />
         </div>
       ),
     },
   ];
 
+  const categoryOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    products.forEach((p) => {
+      if (p.category?._id) map.set(p.category._id, p.category.name);
+    });
+    return [
+      { value: "all", label: "All Categories" },
+      ...Array.from(map.entries()).map(([value, label]) => ({ value, label })),
+    ];
+  }, [products]);
+
+  const partnerOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    products.forEach((p) => {
+      if (p.createdBy?._id) map.set(p.createdBy._id, p.createdBy.name || p.createdBy.email);
+    });
+    return [
+      { value: "all", label: "All Partners" },
+      ...Array.from(map.entries()).map(([value, label]) => ({ value, label })),
+    ];
+  }, [products]);
+
   const filteredProducts = products.filter((p) => {
     const term = searchText.toLowerCase();
-    return (
+    const matchesSearch =
       p.name.toLowerCase().includes(term) ||
       (p.category?.name || "").toLowerCase().includes(term) ||
-      (p.brand || "").toLowerCase().includes(term)
-    );
+      (p.brand || "").toLowerCase().includes(term);
+    const matchesCategory = categoryFilter === "all" || p.category?._id === categoryFilter;
+    const matchesPartner = partnerFilter === "all" || p.createdBy?._id === partnerFilter;
+    return matchesSearch && matchesCategory && matchesPartner;
   });
 
   return (
@@ -247,17 +249,21 @@ const ProductsTable: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap">
           <Select
-            value={statusFilter}
-            onChange={(val) => setStatusFilter(val)}
+            value={categoryFilter}
+            onChange={(val) => setCategoryFilter(val)}
             className="category-dropdown-select"
             suffixIcon={<FilterOutlined />}
-            options={[
-              { value: "all", label: "All Statuses" },
-              { value: "pending", label: "Pending" },
-              { value: "approved", label: "Approved" },
-              { value: "rejected", label: "Rejected" },
-            ]}
+            options={categoryOptions}
           />
+          {canApprove && (
+            <Select
+              value={partnerFilter}
+              onChange={(val) => setPartnerFilter(val)}
+              className="category-dropdown-select"
+              suffixIcon={<FilterOutlined />}
+              options={partnerOptions}
+            />
+          )}
         </div>
       </div>
 

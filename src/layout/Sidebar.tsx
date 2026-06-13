@@ -86,20 +86,28 @@ import {
   LogoutOutlined,
   LeftOutlined,
   RightOutlined,
+  TeamOutlined,
+  FileSearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAppDispatch } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../hooks";
 import { logoutUser } from "../auth/authSlice";
+import type { Role } from "../auth/types";
 
 interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
 }
 
+const ALL_STAFF: Role[] = ["super_admin", "admin", "partner"];
+const ADMIN_ONLY: Role[] = ["super_admin", "admin"];
+const SUPER_ADMIN_ONLY: Role[] = ["super_admin"];
+
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const naviagate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
+  const role = useAppSelector((state) => state.auth.user?.role);
 
   const menuItems = [
     {
@@ -108,80 +116,107 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       icon: <AppstoreOutlined />,
       active: true,
       link: "/",
+      visibleRoles: ALL_STAFF,
     },
     {
       id: "products",
       label: "Products",
       icon: <ShoppingOutlined />,
       link: "/products",
+      visibleRoles: ALL_STAFF,
     },
     {
       id: "categories",
       label: "Categories",
       icon: <TagsOutlined />,
       link: "/categories",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "inventory",
       label: "Inventory",
       icon: <ContainerOutlined />,
       link: "/inventory",
+      visibleRoles: ALL_STAFF,
     },
     {
       id: "orders",
       label: "Orders",
       icon: <ShoppingCartOutlined />,
       link: "/orders",
+      visibleRoles: ALL_STAFF,
+    },
+    {
+      id: "partners",
+      label: "Partners",
+      icon: <TeamOutlined />,
+      link: "/partners",
+      visibleRoles: SUPER_ADMIN_ONLY,
+    },
+    {
+      id: "pending-approvals",
+      label: "Pending Approvals",
+      icon: <FileSearchOutlined />,
+      link: "/pending-approvals",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "customers",
       label: "Customers",
       icon: <UsergroupAddOutlined />,
       link: "/customers",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "marketing",
       label: "Marketing",
       icon: <SettingOutlined />,
       link: "/marketing",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "returns",
       label: "Returns & Refunds",
       icon: <ContainerOutlined />,
       link: "/return-and-refunds",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "revenue",
       label: "Revenue & Payments",
       icon: <BarChartOutlined />,
       link: "/revenue-and-payments",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "analytics",
       label: "Analytics",
       icon: <BarChartOutlined />,
       link: "/analytics",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "notifications",
       label: "Notifications",
       icon: <BellOutlined />,
       link: "/notifications",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "cms",
       label: "CMS / Content",
       icon: <ContainerOutlined />,
       link: "/content-management",
+      visibleRoles: ADMIN_ONLY,
     },
     {
       id: "settings",
       label: "Settings",
       icon: <SettingOutlined />,
       link: "/settings",
+      visibleRoles: ADMIN_ONLY,
     },
-  ];
+  ].filter((item) => !role || item.visibleRoles.includes(role));
 
   const handleNavigate = (link: any) => {
     if (link) {

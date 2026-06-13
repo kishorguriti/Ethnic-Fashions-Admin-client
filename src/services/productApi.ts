@@ -26,12 +26,14 @@ export interface Product {
   category: ProductCategory;
   brand?: string;
   tags: string[];
-  attributes: Record<string, string>;
+  attributes: Record<string, string | string[]>;
   approvalStatus: ApprovalStatus;
   isActive: boolean;
   rejectionReason?: string | null;
+  pendingChanges?: Record<string, any> | null;
   createdBy?: ProductUser;
   approvedBy?: ProductUser | null;
+  thumbnail?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -81,7 +83,7 @@ export interface CreateProductPayload {
   category: string;
   brand?: string;
   tags?: string[];
-  attributes?: Record<string, string>;
+  attributes?: Record<string, string | string[]>;
 }
 
 export interface UpdateProductPayload {
@@ -89,7 +91,7 @@ export interface UpdateProductPayload {
   description?: string;
   brand?: string;
   tags?: string[];
-  attributes?: Record<string, string>;
+  attributes?: Record<string, string | string[]>;
 }
 
 export interface CreateVariantPayload {
@@ -149,8 +151,14 @@ export const getAdminProducts = (params?: {
 }) =>
   axiosInstance.get<ProductListResponse>("/products/admin/all", { params });
 
+export const getPendingProducts = (params?: { page?: number; limit?: number }) =>
+  axiosInstance.get<ProductListResponse>("/products/admin/pending", { params });
+
 export const getAdminProductById = (id: string) =>
   axiosInstance.get<ProductWithVariantsResponse>(`/products/admin/${id}`);
+
+export const getAdminProductBySlug = (slug: string) =>
+  axiosInstance.get<ProductWithVariantsResponse>(`/products/admin/by-slug/${slug}`);
 
 export const createProduct = (data: CreateProductPayload) =>
   axiosInstance.post<ProductResponse>("/products", data);

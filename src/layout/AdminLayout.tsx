@@ -11,6 +11,18 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 
+const getPageTitle = (pathname: string): string => {
+  if (pathname === "/products/add-new-product") return "Add New Product";
+  if (pathname.startsWith("/products/edit/")) return "Edit Product";
+
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 0) return "Dashboard";
+
+  return segments[0]
+    .replaceAll("-", " ")
+    .replace(/^./, (c) => c.toUpperCase());
+};
+
 const Layout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const location = useLocation();
@@ -54,10 +66,7 @@ const Layout: React.FC = () => {
             >
               <MenuOutlined />
             </button>
-            <h2 className="page-heading mb-0">
-              {location?.pathname?.replaceAll("/", "")?.replaceAll("-", " ") ||
-                "Dashboard"}
-            </h2>
+            <h2 className="page-heading mb-0">{getPageTitle(location.pathname)}</h2>
           </div>
 
           <div className="header-actions d-flex align-items-center gap-4">
