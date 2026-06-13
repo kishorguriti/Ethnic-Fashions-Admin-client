@@ -348,11 +348,15 @@ const AddNewProduct: React.FC = () => {
       render: (media: ProductVariant["media"]) => (
         <div className="d-flex gap-1">
           {(media || []).slice(0, 3).map((m) => (
-            <img
+            <Image
               key={m._id}
               src={m.url}
               alt="variant"
               className="variant-media-thumb"
+              width={40}
+              height={40}
+              style={{ objectFit: "cover" }}
+              preview={{ mask: "Zoom" }}
             />
           ))}
         </div>

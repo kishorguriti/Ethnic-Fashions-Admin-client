@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, InputNumber, Button, Upload, message } from "antd";
+import { Modal, Form, Input, InputNumber, Button, Upload, Image, message } from "antd";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
 import {
@@ -187,10 +187,13 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
                   key={m._id}
                   style={{ position: "relative", width: 96, height: 96 }}
                 >
-                  <img
+                  <Image
                     src={m.url}
                     alt="variant"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
+                    width="100%"
+                    height="100%"
+                    style={{ objectFit: "cover", borderRadius: 8 }}
+                    preview={{ mask: "Zoom" }}
                   />
                   <Button
                     size="small"

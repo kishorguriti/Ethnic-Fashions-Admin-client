@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Button, Row, Col, Tag, Skeleton, Divider, message } from "antd";
-import { EditOutlined, SaveOutlined, CloseOutlined, StopOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  SaveOutlined,
+  CloseOutlined,
+  StopOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  ShopOutlined,
+  IdcardOutlined,
+  EnvironmentOutlined,
+  BankOutlined,
+} from "@ant-design/icons";
 import {
   getPartnerById,
   updatePartner,
@@ -8,6 +21,29 @@ import {
   type Partner,
   type UpdatePartnerPayload,
 } from "../../services/partnerApi";
+
+const getInitials = (name: string) => {
+  const trimmed = name?.trim();
+  if (!trimmed) return "??";
+  const parts = trimmed.split(" ").filter(Boolean);
+  return parts.length >= 2
+    ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    : trimmed.slice(0, 2).toUpperCase();
+};
+
+const DetailItem: React.FC<{ icon: React.ReactNode; label: string; value: React.ReactNode }> = ({
+  icon,
+  label,
+  value,
+}) => (
+  <div className="detail-item d-flex align-items-start gap-2">
+    <span className="detail-item-icon">{icon}</span>
+    <div className="detail-item-body">
+      <span className="detail-item-label text-muted d-block">{label}</span>
+      <span className="detail-item-value">{value}</span>
+    </div>
+  </div>
+);
 
 interface PartnerDetailModalProps {
   open: boolean;
@@ -107,67 +143,116 @@ const PartnerDetailModal: React.FC<PartnerDetailModalProps> = ({
       centered
       destroyOnClose
       width={680}
-      title={mode === "edit" ? "Edit Partner" : "Partner Details"}
+      title={null}
+      closeIcon={null}
       className="partner-detail-modal-override"
     >
       {loading || !partner ? (
-        <Skeleton active paragraph={{ rows: 6 }} />
+        <Skeleton active avatar paragraph={{ rows: 6 }} className="p-2" />
       ) : mode === "view" ? (
         <div className="partner-detail-view">
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Contact Name</span>
-            <strong>{partner.name}</strong>
-          </div>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Email</span>
-            <strong>{partner.email}</strong>
-          </div>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Phone</span>
-            <strong>{partner.phone}</strong>
-          </div>
-          {partner.partnerProfile.alternatePhone && (
-            <div className="detail-row d-flex justify-content-between py-2">
-              <span className="detail-label text-muted">Alternate Phone</span>
-              <strong>{partner.partnerProfile.alternatePhone}</strong>
+          <Button type="text" className="modal-close-btn" onClick={handleClose} aria-label="Close">
+            ×
+          </Button>
+
+          <div className="detail-header d-flex align-items-start justify-content-between">
+            <div className="d-flex align-items-center gap-3">
+              <div className="partner-avatar-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0">
+                {getInitials(partner.partnerProfile.businessName || partner.name)}
+              </div>
+              <div>
+                <h4 className="mb-0 detail-header-title">{partner.partnerProfile.businessName}</h4>
+                <span className="text-muted small">{partner.name}</span>
+                <span className="text-muted small d-block partner-since-lbl">
+                  Partner since {new Date(partner.createdAt).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
             </div>
-          )}
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Status</span>
-            <Tag color={partner.isActive ? "green" : "red"}>
+            <Tag className="status-pill" color={partner.isActive ? "green" : "red"}>
               {partner.isActive ? "ACTIVE" : "INACTIVE"}
             </Tag>
           </div>
 
-          <Divider orientation="left" plain>Business Details</Divider>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Business Name</span>
-            <strong>{partner.partnerProfile.businessName}</strong>
-          </div>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">GST Number</span>
-            <strong>{partner.partnerProfile.gstNumber}</strong>
-          </div>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Address</span>
-            <strong className="text-end">{partner.partnerProfile.businessAddress}</strong>
-          </div>
-
-          <Divider orientation="left" plain>Bank Details</Divider>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Account Holder</span>
-            <strong>{partner.partnerProfile.bankDetails.accountHolderName}</strong>
-          </div>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">Account Number</span>
-            <strong>{partner.partnerProfile.bankDetails.accountNumber}</strong>
-          </div>
-          <div className="detail-row d-flex justify-content-between py-2">
-            <span className="detail-label text-muted">IFSC Code</span>
-            <strong>{partner.partnerProfile.bankDetails.ifscCode}</strong>
+          <div className="detail-section-card mt-4">
+            <h6 className="detail-section-title">Contact Information</h6>
+            <Row gutter={[24, 16]}>
+              <Col span={12}>
+                <DetailItem icon={<MailOutlined />} label="Email" value={partner.email} />
+              </Col>
+              <Col span={12}>
+                <DetailItem icon={<PhoneOutlined />} label="Phone" value={partner.phone} />
+              </Col>
+              {partner.partnerProfile.alternatePhone && (
+                <Col span={12}>
+                  <DetailItem
+                    icon={<PhoneOutlined />}
+                    label="Alternate Phone"
+                    value={partner.partnerProfile.alternatePhone}
+                  />
+                </Col>
+              )}
+            </Row>
           </div>
 
-          <div className="d-flex justify-content-end gap-2 mt-4">
+          <div className="detail-section-card mt-3">
+            <h6 className="detail-section-title">Business Details</h6>
+            <Row gutter={[24, 16]}>
+              <Col span={12}>
+                <DetailItem
+                  icon={<ShopOutlined />}
+                  label="Business Name"
+                  value={partner.partnerProfile.businessName}
+                />
+              </Col>
+              <Col span={12}>
+                <DetailItem
+                  icon={<IdcardOutlined />}
+                  label="GST Number"
+                  value={partner.partnerProfile.gstNumber}
+                />
+              </Col>
+              <Col span={24}>
+                <DetailItem
+                  icon={<EnvironmentOutlined />}
+                  label="Address"
+                  value={partner.partnerProfile.businessAddress}
+                />
+              </Col>
+            </Row>
+          </div>
+
+          <div className="detail-section-card mt-3">
+            <h6 className="detail-section-title">Bank Details</h6>
+            <Row gutter={[24, 16]}>
+              <Col span={12}>
+                <DetailItem
+                  icon={<BankOutlined />}
+                  label="Account Holder"
+                  value={partner.partnerProfile.bankDetails.accountHolderName}
+                />
+              </Col>
+              <Col span={12}>
+                <DetailItem
+                  icon={<BankOutlined />}
+                  label="Account Number"
+                  value={partner.partnerProfile.bankDetails.accountNumber}
+                />
+              </Col>
+              <Col span={12}>
+                <DetailItem
+                  icon={<BankOutlined />}
+                  label="IFSC Code"
+                  value={partner.partnerProfile.bankDetails.ifscCode}
+                />
+              </Col>
+            </Row>
+          </div>
+
+          <div className="detail-footer-actions d-flex justify-content-end gap-2 mt-4">
             <Button
               danger={partner.isActive}
               icon={partner.isActive ? <StopOutlined /> : <CheckCircleOutlined />}
