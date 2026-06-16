@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button, Input, Select, Table, Tag, Modal, InputNumber, message } from "antd";
+import { Button, Input, Select, Table, Tag, Modal, message } from "antd";
+import NumberStepper from "../components/NumberStepper";
 import {
   SearchOutlined,
   MedicineBoxOutlined,
@@ -98,13 +99,12 @@ const InventoryManagement: React.FC = () => {
             Specify the new stock count for {record.product.name} ({record.color}
             {record.size ? ` / ${record.size}` : ""}):
           </p>
-          <InputNumber
+          <NumberStepper
             min={0}
             defaultValue={record.stock}
             onChange={(val) => {
               targetNewVal = val;
             }}
-            className="w-100"
           />
         </div>
       ),
@@ -243,6 +243,7 @@ const InventoryManagement: React.FC = () => {
 
       <div className="filter-controls-card p-3 mb-4 d-flex flex-column flex-md-row justify-content-between gap-3 align-items-stretch align-items-md-center">
         <Input
+          size="large"
           placeholder="Search by product name or SKU..."
           prefix={<SearchOutlined className="search-icon-dimmed" />}
           className="search-input-field flex-grow-1"
@@ -251,6 +252,7 @@ const InventoryManagement: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
           <Select
+            size="large"
             value={selectedStatus}
             onChange={(val) => setSelectedStatus(val)}
             className="toolbar-select-dropdown"

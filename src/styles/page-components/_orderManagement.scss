@@ -106,7 +106,6 @@ $border-surface-trim: #edf0f4;
             background-color: #f3f4f6;
             border: none;
             border-radius: 8px;
-            padding: 8px 14px;
 
             .search-icon-dimmed {
                 color: #9ca3af;
@@ -120,7 +119,7 @@ $border-surface-trim: #edf0f4;
                 background-color: #f3f4f6 !important;
                 border-radius: 8px !important;
                 border: none !important;
-                height: 38px !important;
+                height: 40px !important;
                 display: flex;
                 align-items: center;
                 font-weight: 500;
@@ -130,7 +129,7 @@ $border-surface-trim: #edf0f4;
 
         .more-filters-action-btn {
             border-radius: 8px;
-            height: 38px;
+            height: 40px;
             border-color: #d1d5db;
             font-weight: 500;
             color: #374151;

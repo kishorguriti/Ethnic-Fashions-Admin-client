@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Table,
   Button,
   Tag,
   Form,
   Input,
-  InputNumber,
   Select,
   DatePicker,
   Switch,
@@ -15,6 +14,7 @@ import {
   Empty,
   message,
 } from "antd";
+import NumberStepper from "../../components/NumberStepper";
 import {
   PlusOutlined,
   EditOutlined,
@@ -49,6 +49,7 @@ interface CouponFormValues {
 
 const Coupons: React.FC = () => {
   const [form] = Form.useForm<CouponFormValues>();
+  const formSectionRef = useRef<HTMLDivElement>(null);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +94,9 @@ const Coupons: React.FC = () => {
       validity: [dayjs(coupon.startsAt), dayjs(coupon.endsAt)],
       isActive: coupon.isActive,
     });
+    setTimeout(() => {
+      formSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   const handleToggleStatus = async (coupon: Coupon) => {
@@ -298,7 +302,7 @@ const Coupons: React.FC = () => {
         )}
       </div>
 
-      <div className="quick-create-form-surface p-4 bg-white border">
+      <div ref={formSectionRef} className="quick-create-form-surface p-4 bg-white border">
         <h3 className="form-inner-title mb-4">
           {editingCoupon ? `Edit Coupon — ${editingCoupon.code}` : "Create Coupon"}
         </h3>
@@ -360,32 +364,17 @@ const Coupons: React.FC = () => {
                 name="value"
                 rules={[{ required: true, message: "Please specify discount value" }]}
               >
-                <InputNumber
-                  placeholder="e.g., 20"
-                  className="custom-form-field w-100"
-                  size="large"
-                  min={0}
-                />
+                <NumberStepper placeholder="e.g., 20" min={0} />
               </Form.Item>
             </div>
             <div className="col-12 col-md-3">
               <Form.Item label="Max Discount Cap" name="maxDiscountCap">
-                <InputNumber
-                  placeholder="e.g., 500"
-                  className="custom-form-field w-100"
-                  size="large"
-                  min={0}
-                />
+                <NumberStepper placeholder="e.g., 500" min={0} />
               </Form.Item>
             </div>
             <div className="col-12 col-md-3">
               <Form.Item label="Min Order Value" name="minOrderValue">
-                <InputNumber
-                  placeholder="0"
-                  className="custom-form-field w-100"
-                  size="large"
-                  min={0}
-                />
+                <NumberStepper placeholder="0" min={0} />
               </Form.Item>
             </div>
           </div>
@@ -393,22 +382,12 @@ const Coupons: React.FC = () => {
           <div className="row g-4 mt-1">
             <div className="col-12 col-md-3">
               <Form.Item label="Total Usage Limit" name="usageLimit">
-                <InputNumber
-                  placeholder="Unlimited"
-                  className="custom-form-field w-100"
-                  size="large"
-                  min={1}
-                />
+                <NumberStepper placeholder="Unlimited" min={1} />
               </Form.Item>
             </div>
             <div className="col-12 col-md-3">
               <Form.Item label="Usage Limit Per User" name="usageLimitPerUser">
-                <InputNumber
-                  placeholder="e.g., 1"
-                  className="custom-form-field w-100"
-                  size="large"
-                  min={1}
-                />
+                <NumberStepper placeholder="e.g., 1" min={1} />
               </Form.Item>
             </div>
             <div className="col-12 col-md-4">
@@ -431,7 +410,7 @@ const Coupons: React.FC = () => {
             </div>
           </div>
 
-          <Form.Item className="mb-0 mt-4 d-flex gap-2">
+          <div className="d-flex gap-2 mt-4">
             <Button
               type="primary"
               htmlType="submit"
@@ -443,11 +422,11 @@ const Coupons: React.FC = () => {
               {editingCoupon ? "Save Changes" : "Create Coupon"}
             </Button>
             {editingCoupon && (
-              <Button size="large" className="ms-2" onClick={resetForm}>
+              <Button size="large" onClick={resetForm}>
                 Cancel
               </Button>
             )}
-          </Form.Item>
+          </div>
         </Form>
       </div>
     </>

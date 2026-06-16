@@ -251,6 +251,7 @@ const ProductsTable: React.FC = () => {
 
       <div className="filter-controls-strip p-3 mb-4 d-flex flex-column flex-md-row justify-content-between gap-3 align-items-stretch align-items-md-center">
         <Input
+          size="large"
           placeholder="Search products by name, category, brand..."
           prefix={<SearchOutlined className="search-icon-muted" />}
           className="search-input-field flex-grow-1"
@@ -259,6 +260,7 @@ const ProductsTable: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap">
           <Select
+            size="large"
             value={categoryFilter}
             onChange={(val) => setCategoryFilter(val)}
             className="category-dropdown-select"
@@ -267,6 +269,7 @@ const ProductsTable: React.FC = () => {
           />
           {canApprove && (
             <Select
+              size="large"
               value={partnerFilter}
               onChange={(val) => setPartnerFilter(val)}
               className="category-dropdown-select"
