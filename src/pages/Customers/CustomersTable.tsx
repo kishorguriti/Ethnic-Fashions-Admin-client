@@ -206,6 +206,7 @@ const CustomersDirectoryTable: React.FC = () => {
       {/* 1. Control Filter Options Upper Toolbar Strip Component */}
       <div className="toolbar-filter-strip p-3 mb-4 d-flex flex-column flex-md-row justify-content-between gap-3 align-items-stretch align-items-md-center bg-white rounded-3 shadow-sm border">
         <Input
+          size="large"
           placeholder="Search by name, email or phone..."
           prefix={<SearchOutlined className="search-icon-dimmed" />}
           className="search-input-field flex-grow-1"
@@ -217,7 +218,7 @@ const CustomersDirectoryTable: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
           <Dropdown menu={verificationMenuProps} trigger={['click']}>
-            <Button icon={<FilterOutlined />} className="toolbar-action-btn">
+            <Button size="large" icon={<FilterOutlined />} className="toolbar-action-btn">
               Verification {verificationFilter !== 'All' && `: ${verificationFilter}`}
             </Button>
           </Dropdown>

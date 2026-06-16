@@ -113,6 +113,7 @@ const OrdersManagement: React.FC = () => {
       {/* Control Filter Options Dynamic Toolbar Container Strip */}
       <div className="filter-controls-card p-3 d-flex flex-column flex-md-row justify-content-between gap-3 align-items-stretch align-items-md-center">
         <Input
+          size="large"
           placeholder="Search by order ID or customer name..."
           prefix={<SearchOutlined className="search-icon-dimmed" />}
           className="search-input-field flex-grow-1"
@@ -121,6 +122,7 @@ const OrdersManagement: React.FC = () => {
         />
         <div className="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
           <Select
+            size="large"
             value={orderStatusFilter}
             onChange={(val) => setOrderStatusFilter(val)}
             className="toolbar-select-dropdown"
@@ -131,7 +133,7 @@ const OrdersManagement: React.FC = () => {
               { value: "Delivered", label: "Delivered" },
             ]}
           />
-          <Button icon={<FilterOutlined />} className="more-filters-action-btn">
+          <Button size="large" icon={<FilterOutlined />} className="more-filters-action-btn">
             More Filters
           </Button>
         </div>

@@ -95,7 +95,6 @@ $border-card-trim: #edf0f4;
             background-color: #f3f4f6;
             border: none;
             border-radius: 8px;
-            padding: 8px 14px;
 
             .search-icon-dimmed {
                 color: #9ca3af;
@@ -108,7 +107,7 @@ $border-card-trim: #edf0f4;
             .ant-select-selector {
                 border-radius: 8px !important;
                 border-color: #d1d5db !important;
-                height: 38px !important;
+                height: 40px !important;
                 display: flex;
                 align-items: center;
             }
