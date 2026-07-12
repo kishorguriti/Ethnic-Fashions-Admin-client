@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Form, Input, Select, Button, message } from "antd";
+import { useState } from "react";
+import { Form, Input, Select, Button } from "antd";
+import type { MessageInstance } from "antd/es/message/interface";
 import { BellOutlined, SendOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
@@ -15,9 +16,12 @@ interface NotificationFormValues {
   schedule: string;
 }
 
-const SendNotification = ({ messageApi }) => {
+interface SendNotificationProps {
+  messageApi: MessageInstance;
+}
+
+const SendNotification = ({ messageApi }: SendNotificationProps) => {
   const [form] = Form.useForm();
-  //   const [messageApi, contextHolder] = message.useMessage();
   const [previewTitle, setPreviewTitle] =
     useState<string>("Notification Title");
   const [previewMessage, setPreviewMessage] = useState<string>(
