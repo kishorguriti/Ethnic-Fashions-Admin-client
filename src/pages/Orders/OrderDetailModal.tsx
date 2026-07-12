@@ -18,6 +18,7 @@ import {
   getAdminOrder,
   updateOrderStatus,
   refundOrder,
+  updatePaymentStatus,
   type AdminOrder,
   type OrderItem,
   type OrderStatus,
@@ -30,6 +31,23 @@ interface OrderDetailModalProps {
   onUpdated?: () => void;
 }
 
+// Human-readable label for an order status, including the new return-lifecycle
+// statuses. Falls back to a simple capitalize for anything unmapped.
+const formatOrderStatus = (status: string): string => {
+  switch (status) {
+    case "return_requested":
+      return "Return Requested";
+    case "return_approved":
+      return "Return Request Approved";
+    case "return_received":
+      return "Return Product Received";
+    case "returned":
+      return "Returned";
+    default:
+      return status ? status.charAt(0).toUpperCase() + status.slice(1) : status;
+  }
+};
+
 const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
   { value: "pending", label: "Pending" },
   { value: "confirmed", label: "Confirmed" },
@@ -37,6 +55,9 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
   { value: "shipped", label: "Shipped" },
   { value: "delivered", label: "Delivered" },
   { value: "cancelled", label: "Cancelled" },
+  { value: "return_requested", label: "Return Requested" },
+  { value: "return_approved", label: "Return Request Approved" },
+  { value: "return_received", label: "Return Product Received" },
   { value: "returned", label: "Returned" },
 ];
 
@@ -53,6 +74,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const [statusValue, setStatusValue] = useState<OrderStatus>("pending");
   const [statusNote, setStatusNote] = useState<string>("");
 
+  const [paymentStatusValue, setPaymentStatusValue] = useState<"paid" | "pending">("pending");
+  const [paymentSaving, setPaymentSaving] = useState<boolean>(false);
+
   const [refundOpen, setRefundOpen] = useState<boolean>(false);
   const [refundLoading, setRefundLoading] = useState<boolean>(false);
   const [refundForm] = Form.useForm();
@@ -65,6 +89,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       setOrder(o);
       setStatusValue(o.status);
       setStatusNote("");
+      setPaymentStatusValue(o.payment?.status === "paid" ? "paid" : "pending");
     } catch {
       message.error("Failed to load order details.");
     } finally {
@@ -98,6 +123,23 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUpdatePayment = async () => {
+    if (!order) return;
+    setPaymentSaving(true);
+    try {
+      await updatePaymentStatus(order._id, paymentStatusValue);
+      message.success("Payment status updated.");
+      await fetchOrder(order._id);
+      onUpdated?.();
+    } catch (err: any) {
+      message.error(
+        err?.response?.data?.message || "Failed to update payment status.",
+      );
+    } finally {
+      setPaymentSaving(false);
     }
   };
 
@@ -196,7 +238,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 {
                   key: "status",
                   label: "Status",
-                  children: <Tag>{order.status}</Tag>,
+                  children: <Tag>{formatOrderStatus(order.status)}</Tag>,
                 },
                 {
                   key: "payment",
@@ -279,6 +321,31 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 </Button>
               )}
             </div>
+
+            {/* COD payment collection control */}
+            {order.payment?.method === "cod" && (
+              <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-end gap-2 mt-3">
+                <div style={{ minWidth: 180 }}>
+                  <label className="text-muted d-block mb-1">Payment Status (COD)</label>
+                  <Select
+                    value={paymentStatusValue}
+                    onChange={(v) => setPaymentStatusValue(v)}
+                    options={[
+                      { value: "pending", label: "Pending" },
+                      { value: "paid", label: "Paid" },
+                    ]}
+                    style={{ width: "100%" }}
+                  />
+                </div>
+                <Button
+                  type="primary"
+                  loading={paymentSaving}
+                  onClick={handleUpdatePayment}
+                >
+                  Update Payment
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </Modal>

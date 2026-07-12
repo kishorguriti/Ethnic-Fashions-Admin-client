@@ -13,8 +13,10 @@ import {
   approveReturn,
   rejectReturn,
   refundReturn,
+  markReceived,
   type AdminReturn,
   type ReturnStats,
+  type ReturnStatus,
 } from "../../services/returnApi";
 
 // Display row shape mapped from the backend AdminReturn.
@@ -27,7 +29,7 @@ interface ReturnRecord {
   product: string;
   date: string;
   reason: string;
-  status: "Pending" | "Approved" | "Refunded" | "Rejected" | "Processing";
+  status: ReturnStatus;
   amount: number;
   raw: AdminReturn;
 }
@@ -40,8 +42,28 @@ interface ReturnMetricCard {
   themeClass: "accent-orange" | "accent-blue" | "accent-green" | "accent-black";
 }
 
-const cap = (s: string) =>
-  (s ? s.charAt(0).toUpperCase() + s.slice(1) : s) as ReturnRecord["status"];
+// Maps a backend return status (plus refund sub-state) to its display label and
+// the closest existing status-pill-* class.
+const statusDisplay = (r: AdminReturn): { label: string; cls: string } => {
+  switch (r.status) {
+    case "pending":
+      return { label: "Pending", cls: "status-pill-pending" };
+    case "approved":
+      return { label: "Approved", cls: "status-pill-approved" };
+    case "received":
+      return { label: "Received", cls: "status-pill-approved" };
+    case "processing":
+      return { label: "Refund in progress", cls: "status-pill-processing" };
+    case "rejected":
+      return { label: "Rejected", cls: "status-pill-rejected" };
+    case "refunded":
+      return r.refund?.status === "processed"
+        ? { label: "Refund credited", cls: "status-pill-refunded" }
+        : { label: "Refund in progress", cls: "status-pill-processing" };
+    default:
+      return { label: r.status, cls: "status-pill-pending" };
+  }
+};
 
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -59,7 +81,7 @@ const toRecord = (r: AdminReturn): ReturnRecord => ({
     (r.items && r.items.length > 1 ? ` +${r.items.length - 1} more` : ""),
   date: fmtDate(r.createdAt),
   reason: r.reason,
-  status: cap(r.status),
+  status: r.status,
   amount: r.amount,
   raw: r,
 });
@@ -110,15 +132,49 @@ const ReturnsRefundsSummary: React.FC = () => {
 
   const refreshAll = () => { loadReturns(); loadStats(); };
 
-  const handleApprove = async (id: string, returnId: string) => {
+  const handleApprove = (id: string, returnId: string) => {
+    Modal.confirm({
+      title: "Approve this return request?",
+      icon: <CheckCircleOutlined className="text-success" />,
+      content: `Return ${returnId} will be marked as approved and the customer notified to ship the product back.`,
+      okText: "Approve",
+      cancelText: "Cancel",
+      async onOk() {
+        setActioningKey(id);
+        try {
+          await approveReturn(id);
+          message.success(`Request ${returnId} has been approved.`);
+          refreshAll();
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || "Failed to approve return.");
+        } finally { setActioningKey(null); }
+      },
+    });
+  };
+
+  const handleMarkReceived = async (id: string, returnId: string) => {
     setActioningKey(id);
     try {
-      await approveReturn(id);
-      message.success(`Request ${returnId} has been approved.`);
+      await markReceived(id);
+      message.success(`Return ${returnId} marked as product received.`);
       refreshAll();
     } catch (err: any) {
-      message.error(err?.response?.data?.message || "Failed to approve return.");
+      message.error(err?.response?.data?.message || "Failed to mark product received.");
     } finally { setActioningKey(null); }
+  };
+
+  const promptProcessRefund = (record: ReturnRecord) => {
+    Modal.confirm({
+      title: "Trigger automatic Razorpay refund?",
+      content:
+        "This initiates an instant Razorpay refund of the return amount to the customer's original payment method. You can review or adjust the amount before confirming.",
+      okText: "Continue",
+      cancelText: "Cancel",
+      onOk() {
+        setRefundTarget(record.raw);
+        refundForm.setFieldsValue({ amount: record.amount });
+      },
+    });
   };
 
   const handleReject = (id: string, returnId: string) => {
@@ -169,15 +225,9 @@ const ReturnsRefundsSummary: React.FC = () => {
     { title: "Reason", dataIndex: "reason", key: "reason", render: (text) => <span className="reason-txt text-secondary">{text}</span> },
     {
       title: "Status", dataIndex: "status", key: "status",
-      render: (status: ReturnRecord["status"]) => {
-        const styleMap = {
-          Pending: "status-pill-pending",
-          Approved: "status-pill-approved",
-          Refunded: "status-pill-refunded",
-          Rejected: "status-pill-rejected",
-          Processing: "status-pill-processing",
-        };
-        return <Tag className={`return-status-pill ${styleMap[status]}`}>{status}</Tag>;
+      render: (_: ReturnRecord["status"], record) => {
+        const { label, cls } = statusDisplay(record.raw);
+        return <Tag className={`return-status-pill ${cls}`}>{label}</Tag>;
       },
     },
     { title: "Amount", dataIndex: "amount", key: "amount", render: (amt) => <strong className="amount-txt text-dark">{money(amt)}</strong> },
@@ -185,7 +235,7 @@ const ReturnsRefundsSummary: React.FC = () => {
       title: "Actions", key: "actions", align: "right",
       render: (_, record) => (
         <div className="table-actions-strip d-inline-flex align-items-center gap-2">
-          {record.status === "Pending" && (
+          {record.status === "pending" && (
             <>
               <Button
                 icon={<CheckCircleOutlined />}
@@ -206,10 +256,20 @@ const ReturnsRefundsSummary: React.FC = () => {
             </>
           )}
 
-          {record.status === "Approved" && (
+          {record.status === "approved" && (
+            <Button
+              loading={actioningKey === record.id}
+              className="btn-action-mark-received"
+              onClick={() => handleMarkReceived(record.id, record.returnId)}
+            >
+              Mark Product Received
+            </Button>
+          )}
+
+          {record.status === "received" && (
             <Button
               className="btn-action-process-refund"
-              onClick={() => { setRefundTarget(record.raw); refundForm.setFieldsValue({ amount: record.amount }); }}
+              onClick={() => promptProcessRefund(record)}
             >
               Process Refund
             </Button>
@@ -305,7 +365,7 @@ const ReturnsRefundsSummary: React.FC = () => {
               { key: "customer", label: "Customer", children: detail.customerName },
               { key: "reason", label: "Reason", children: detail.reason },
               { key: "type", label: "Type", children: detail.type },
-              { key: "status", label: "Status", children: <Tag>{cap(detail.status)}</Tag> },
+              { key: "status", label: "Status", children: <Tag>{statusDisplay(detail).label}</Tag> },
               { key: "amount", label: "Amount", children: money(detail.amount) },
               ...(detail.reasonText ? [{ key: "note", label: "Customer note", span: 2, children: detail.reasonText }] : []),
               ...(detail.refund?.at ? [{ key: "refund", label: "Refund", span: 2, children: `${money(detail.refund.amount || 0)} via ${detail.refund.method}${detail.refund.razorpayRefundId ? ` (${detail.refund.razorpayRefundId})` : ""}` }] : []),

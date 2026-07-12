@@ -27,6 +27,7 @@ export interface Product {
   brand?: string;
   tags: string[];
   attributes: Record<string, string | string[]>;
+  returnPeriodDays?: number;
   approvalStatus: ApprovalStatus;
   isActive: boolean;
   rejectionReason?: string | null;
@@ -84,6 +85,7 @@ export interface CreateProductPayload {
   brand?: string;
   tags?: string[];
   attributes?: Record<string, string | string[]>;
+  returnPeriodDays?: number;
 }
 
 export interface UpdateProductPayload {
@@ -92,6 +94,7 @@ export interface UpdateProductPayload {
   brand?: string;
   tags?: string[];
   attributes?: Record<string, string | string[]>;
+  returnPeriodDays?: number;
 }
 
 export interface CreateVariantPayload {

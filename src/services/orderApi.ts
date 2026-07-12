@@ -7,6 +7,9 @@ export type OrderStatus =
   | "shipped"
   | "delivered"
   | "cancelled"
+  | "return_requested"
+  | "return_approved"
+  | "return_received"
   | "returned";
 
 export type PaymentStatus =
@@ -150,4 +153,13 @@ export const refundOrder = (
   axiosInstance.post<AdminOrderDetailResponse>(
     `/orders/admin/${id}/refund`,
     body,
+  );
+
+export const updatePaymentStatus = (
+  id: string,
+  status: "paid" | "pending",
+) =>
+  axiosInstance.patch<AdminOrderDetailResponse>(
+    `/orders/admin/${id}/payment-status`,
+    { status },
   );
