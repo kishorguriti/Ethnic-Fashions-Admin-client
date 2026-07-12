@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Input, Select, message } from "antd";
 import {
   DownloadOutlined,
@@ -6,6 +6,7 @@ import {
   FilterOutlined,
 } from "@ant-design/icons";
 import OrdersTable from "./OrdersTable";
+import { getAdminOrderStats, type OrderStats } from "../../services/orderApi";
 
 // TypeScript schema interfaces defining mock metrics
 interface OrderMetricCard {
@@ -16,39 +17,59 @@ interface OrderMetricCard {
   accentClass: string; // Dynamic mapping for specific font colors from image
 }
 
+// Map the toolbar status labels to the backend status enum.
+const STATUS_PARAM_MAP: Record<string, string | undefined> = {
+  "All Orders": undefined,
+  Pending: "pending",
+  Processing: "processing",
+  Delivered: "delivered",
+};
+
 const OrdersManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [orderStatusFilter, setOrderStatusFilter] =
     useState<string>("All Orders");
   const [exportLoading, setExportLoading] = useState<boolean>(false);
+  const [stats, setStats] = useState<OrderStats | null>(null);
 
-  // Static KPI metadata parameters matching image text variables exactly
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getAdminOrderStats();
+        setStats(res.data.data);
+      } catch {
+        message.error("Failed to load order stats.");
+      }
+    })();
+  }, []);
+
+  // KPI metadata; counts are populated from live stats when available.
   const summaryMetrics: OrderMetricCard[] = [
     {
       id: 1,
       title: "Total Orders",
-      count: 245,
+      count: stats?.totalOrders ?? 0,
       subText: "+12% from last month",
       accentClass: "accent-black",
     },
     {
       id: 2,
       title: "Pending",
-      count: 28,
+      count: stats?.pending ?? 0,
       subText: "Requires attention",
       accentClass: "accent-orange",
     },
     {
       id: 3,
       title: "Processing",
-      count: 42,
+      count: stats?.processing ?? 0,
       subText: "Being prepared",
       accentClass: "accent-blue",
     },
     {
       id: 4,
       title: "Delivered",
-      count: 175,
+      count: stats?.delivered ?? 0,
       subText: "Successfully completed",
       accentClass: "accent-green",
     },
@@ -138,7 +159,10 @@ const OrdersManagement: React.FC = () => {
           </Button>
         </div>
       </div>
-      <OrdersTable />
+      <OrdersTable
+        search={searchQuery}
+        statusFilter={STATUS_PARAM_MAP[orderStatusFilter]}
+      />
     </div>
   );
 };

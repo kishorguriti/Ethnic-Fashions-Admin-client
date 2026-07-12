@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, message } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
+import {
+  getRevenueSummary,
+  type RevenueSummary,
+} from "../../services/revenueApi";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,13 +43,27 @@ interface MetricCard {
 
 const RevenuePaymentsDashboard: React.FC = () => {
   const [exportLoading, setExportLoading] = useState<boolean>(false);
+  const [summary, setSummary] = useState<RevenueSummary | null>(null);
 
-  // Telemetry metric summary data items extracted from your image structure
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getRevenueSummary();
+        setSummary(res.data.data);
+      } catch {
+        message.error("Failed to load revenue summary.");
+      }
+    })();
+  }, []);
+
+  const rupees = (n: number) => `₹${(n ?? 0).toLocaleString("en-IN")}`;
+
+  // Telemetry metric summary cards populated from live revenue summary
   const metrics: MetricCard[] = [
     {
       id: 1,
       title: "Total Revenue",
-      value: "₹8,45,230",
+      value: rupees(summary?.totalRevenue ?? 0),
       subText: "+12.5% from last month",
       iconText: "＄",
       typeClass: "green",
@@ -53,24 +71,24 @@ const RevenuePaymentsDashboard: React.FC = () => {
     {
       id: 2,
       title: "This Month",
-      value: "₹67,000",
-      subText: "295 orders",
+      value: rupees(summary?.thisMonthRevenue ?? 0),
+      subText: `${summary?.thisMonthOrders ?? 0} orders`,
       iconText: "📈",
       typeClass: "blue",
     },
     {
       id: 3,
       title: "Pending Payments",
-      value: "₹24,500",
-      subText: "18 orders",
+      value: rupees(summary?.pendingPayments ?? 0),
+      subText: `${summary?.pendingPaymentsOrders ?? 0} orders`,
       iconText: "💳",
       typeClass: "orange",
     },
     {
       id: 4,
       title: "Refunds (Month)",
-      value: "₹1,24,500",
-      subText: "45 refunds",
+      value: rupees(summary?.refundsMonth ?? 0),
+      subText: `${summary?.refundsCount ?? 0} refunds`,
       iconText: "🔄",
       typeClass: "red",
     },
@@ -91,13 +109,28 @@ const RevenuePaymentsDashboard: React.FC = () => {
     }
   };
 
+  // Derive labels + values from the live summary (fallback to empty)
+  const revenueLabels = summary?.monthlyRevenue.map((p) => p.label) ?? [];
+  const revenueValues = summary?.monthlyRevenue.map((p) => p.value) ?? [];
+  const ordersLabels = summary?.monthlyOrders.map((p) => p.label) ?? [];
+  const ordersValues = summary?.monthlyOrders.map((p) => p.count) ?? [];
+
+  // Compute a clean y-axis max/step so live data isn't clipped
+  const axisFor = (values: number[]) => {
+    const raw = values.length ? Math.max(...values) : 0;
+    const max = raw <= 0 ? 100 : Math.ceil(raw * 1.15);
+    return { max, step: Math.max(1, Math.ceil(max / 4)) };
+  };
+  const revenueAxis = axisFor(revenueValues);
+  const ordersAxis = axisFor(ordersValues);
+
   // 1. Monthly Revenue Trend Chart Config (Line Chart)
   const lineChartData = {
-    labels: ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"],
+    labels: revenueLabels,
     datasets: [
       {
         label: "Revenue",
-        data: [42000, 45000, 52000, 48000, 61000, 55000, 67000],
+        data: revenueValues,
         borderColor: "#9333ea", // Purple line matching image line plot curve accent
         backgroundColor: "#9333ea",
         pointBorderColor: "#9333ea",
@@ -111,11 +144,11 @@ const RevenuePaymentsDashboard: React.FC = () => {
 
   // 2. Orders Trend Chart Config (Bar Chart)
   const barChartData = {
-    labels: ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"],
+    labels: ordersLabels,
     datasets: [
       {
         label: "Orders Count",
-        data: [185, 198, 224, 210, 268, 242, 295],
+        data: ordersValues,
         backgroundColor: "#e54394", // Pink theme tone from the image vertical column blocks
         borderRadius: 2,
         barThickness: 34,
@@ -194,7 +227,10 @@ const RevenuePaymentsDashboard: React.FC = () => {
           <div className="chart-analytics-card p-4 bg-white">
             <h3 className="chart-inner-title mb-4">Monthly Revenue Trend</h3>
             <div className="chart-canvas-box">
-              <Line data={lineChartData} options={chartOptions(80000, 20000)} />
+              <Line
+                data={lineChartData}
+                options={chartOptions(revenueAxis.max, revenueAxis.step)}
+              />
             </div>
           </div>
         </div>
@@ -204,7 +240,10 @@ const RevenuePaymentsDashboard: React.FC = () => {
           <div className="chart-analytics-card p-4 bg-white">
             <h3 className="chart-inner-title mb-4">Orders Trend</h3>
             <div className="chart-canvas-box">
-              <Bar data={barChartData} options={chartOptions(300, 75)} />
+              <Bar
+                data={barChartData}
+                options={chartOptions(ordersAxis.max, ordersAxis.step)}
+              />
             </div>
           </div>
         </div>

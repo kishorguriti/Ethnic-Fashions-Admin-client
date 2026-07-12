@@ -1,6 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Table, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { getTransactions, getRefunds } from "../../services/revenueApi";
+
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
 // TypeScript schema interface defining transaction record entries
 interface TransactionRecord {
@@ -26,90 +34,57 @@ interface RefundRecord {
 }
 
 const FinancialLedgers: React.FC = () => {
-  // 1. Transactions state list pre-filled with explicitly mapped data rows visible in your image
-  const [transactions] = useState<TransactionRecord[]>([
-    {
-      key: "t1",
-      txId: "TXN-45123",
-      orderId: "ORD-2451",
-      customer: "Priya Sharma",
-      date: "Mar 5, 2026",
-      method: "UPI",
-      status: "Success",
-      amount: 8450,
-    },
-    {
-      key: "t2",
-      txId: "TXN-45122",
-      orderId: "ORD-2450",
-      customer: "Ananya Reddy",
-      date: "Mar 5, 2026",
-      method: "Credit Card",
-      status: "Success",
-      amount: 12300,
-    },
-    {
-      key: "t3",
-      txId: "TXN-45121",
-      orderId: "ORD-2449",
-      customer: "Meera Patel",
-      date: "Mar 4, 2026",
-      method: "Debit Card",
-      status: "Success",
-      amount: 5680,
-    },
-    {
-      key: "t4",
-      txId: "TXN-45120",
-      orderId: "ORD-2448",
-      customer: "Kavita Singh",
-      date: "Mar 4, 2026",
-      method: "Net Banking",
-      status: "Pending",
-      amount: 9200,
-    },
-    {
-      key: "t5",
-      txId: "TXN-45119",
-      orderId: "ORD-2447",
-      customer: "Deepa Kumar",
-      date: "Mar 3, 2026",
-      method: "UPI",
-      status: "Success",
-      amount: 15750,
-    },
-  ]);
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
+  const [refunds, setRefunds] = useState<RefundRecord[]>([]);
+  const [txLoading, setTxLoading] = useState<boolean>(false);
+  const [refundLoading, setRefundLoading] = useState<boolean>(false);
 
-  // 2. Refunds state list pre-filled with data rows from the layout image
-  const [refunds] = useState<RefundRecord[]>([
-    {
-      key: "r1",
-      refundId: "REF-001",
-      orderId: "ORD-2440",
-      customer: "Priya Sharma",
-      date: "Mar 3, 2026",
-      status: "Processed",
-      amount: 8450,
-    },
-    {
-      key: "r2",
-      refundId: "REF-002",
-      orderId: "ORD-2435",
-      customer: "Meera Patel",
-      date: "Mar 2, 2026",
-      status: "Processing",
-      amount: 4200,
-    },
-    {
-      key: "r3",
-      refundId: "REF-003",
-      orderId: "ORD-2428",
-      customer: "Kavita Singh",
-      date: "Mar 1, 2026",
-      status: "Processed",
-      amount: 12000,
-    },
-  ]);
+  useEffect(() => {
+    (async () => {
+      setTxLoading(true);
+      try {
+        const res = await getTransactions({ page: 1, limit: 10 });
+        setTransactions(
+          res.data.data.transactions.map((t) => ({
+            key: t._id,
+            txId: t.txId,
+            orderId: t.orderId,
+            customer: t.customer,
+            date: formatDate(t.date),
+            method: t.method,
+            status: t.status,
+            amount: t.amount,
+          })),
+        );
+      } catch {
+        message.error("Failed to load transactions.");
+      } finally {
+        setTxLoading(false);
+      }
+    })();
+
+    (async () => {
+      setRefundLoading(true);
+      try {
+        const res = await getRefunds({ page: 1, limit: 10 });
+        setRefunds(
+          res.data.data.refunds.map((r) => ({
+            key: r.refundId,
+            refundId: r.refundId,
+            orderId: r.orderId,
+            customer: r.customer,
+            date: formatDate(r.date),
+            status: r.status,
+            amount: r.amount,
+          })),
+        );
+      } catch {
+        message.error("Failed to load refunds.");
+      } finally {
+        setRefundLoading(false);
+      }
+    })();
+  }, []);
 
   // Shared routine layout helper splitting text identifiers across multiple rows
   const renderSplitOrderId = (id: string) => {
@@ -252,6 +227,7 @@ const FinancialLedgers: React.FC = () => {
         <Table
           columns={transactionColumns}
           dataSource={transactions}
+          loading={txLoading}
           pagination={false}
           scroll={{ x: "max-content" }}
           className="custom-financial-table"
@@ -265,6 +241,7 @@ const FinancialLedgers: React.FC = () => {
         <Table
           columns={refundColumns}
           dataSource={refunds}
+          loading={refundLoading}
           pagination={false}
           scroll={{ x: "max-content" }}
           className="custom-financial-table"
