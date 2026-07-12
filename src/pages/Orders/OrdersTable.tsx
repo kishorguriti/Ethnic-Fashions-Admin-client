@@ -15,7 +15,7 @@ interface OrderRecord {
   date: string;
   itemsCount: number;
   paymentStatus: 'Paid' | 'Pending';
-  orderStatus: 'Delivered' | 'Processing' | 'Shipped' | 'Pending' | 'Cancelled' | 'Returned';
+  orderStatus: AdminOrder['status'];
   amount: number;
 }
 
@@ -24,24 +24,45 @@ interface OrdersTableProps {
   statusFilter?: string; // lowercase API status enum, or undefined for all
 }
 
-// Map raw order status enum to the existing display label set.
-const mapOrderStatus = (status: AdminOrder['status']): OrderRecord['orderStatus'] => {
+// Human-readable label for a raw order status enum, including the new
+// return-lifecycle statuses (so they render as readable text, not snake_case).
+const formatOrderStatus = (status: AdminOrder['status']): string => {
   switch (status) {
     case 'confirmed':
       return 'Processing'; // UI has no Confirmed tag — treat as Processing
-    case 'processing':
-      return 'Processing';
-    case 'shipped':
-      return 'Shipped';
-    case 'delivered':
-      return 'Delivered';
-    case 'cancelled':
-      return 'Cancelled';
+    case 'return_requested':
+      return 'Return Requested';
+    case 'return_approved':
+      return 'Return Request Approved';
+    case 'return_received':
+      return 'Return Product Received';
     case 'returned':
       return 'Returned';
+    default:
+      return status ? status.charAt(0).toUpperCase() + status.slice(1) : status;
+  }
+};
+
+// Map a raw order status to the closest existing state-* pill class.
+const orderStatusClass = (status: AdminOrder['status']): string => {
+  switch (status) {
+    case 'delivered':
+      return 'state-delivered';
+    case 'shipped':
+      return 'state-shipped';
+    case 'cancelled':
+      return 'state-cancelled';
+    case 'returned':
+    case 'return_requested':
+    case 'return_approved':
+    case 'return_received':
+      return 'state-returned';
+    case 'confirmed':
+    case 'processing':
+      return 'state-processing';
     case 'pending':
     default:
-      return 'Pending';
+      return 'state-pending';
   }
 };
 
@@ -74,7 +95,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ search, statusFilter }) => {
         }),
         itemsCount: o.items.length,
         paymentStatus: o.payment?.status === 'paid' ? 'Paid' : 'Pending',
-        orderStatus: mapOrderStatus(o.status),
+        orderStatus: o.status,
         amount: o.total,
       }));
       setOrders(mapped);
@@ -166,8 +187,8 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ search, statusFilter }) => {
       dataIndex: 'orderStatus',
       key: 'status',
       render: (status: OrderRecord['orderStatus']) => (
-        <Tag className={`status-pill-tag state-${status.toLowerCase()}`}>
-          {status}
+        <Tag className={`status-pill-tag ${orderStatusClass(status)}`}>
+          {formatOrderStatus(status)}
         </Tag>
       )
     },

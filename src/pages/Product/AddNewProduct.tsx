@@ -4,6 +4,7 @@ import { useAppSelector } from "../../hooks";
 import {
   Form,
   Input,
+  InputNumber,
   Select,
   Switch,
   Button,
@@ -53,6 +54,7 @@ interface ProductFormValues {
   brand?: string;
   tags?: string[];
   attributes?: Record<string, string | string[]>;
+  returnPeriodDays?: number;
 }
 
 // Mirrors the customer-facing product gallery: a large main image with a
@@ -172,6 +174,7 @@ const AddNewProduct: React.FC = () => {
           brand: p.brand,
           tags: p.tags || [],
           attributes,
+          returnPeriodDays: p.returnPeriodDays ?? 14,
         });
       } catch (err: any) {
         message.error(err?.response?.data?.message || "Failed to load product");
@@ -196,6 +199,7 @@ const AddNewProduct: React.FC = () => {
           brand: values.brand,
           tags: values.tags,
           attributes: values.attributes || {},
+          returnPeriodDays: values.returnPeriodDays ?? 14,
         };
         const res = await updateProduct(product._id, payload);
         message.success(res.data.message);
@@ -208,6 +212,7 @@ const AddNewProduct: React.FC = () => {
           brand: values.brand,
           tags: values.tags,
           attributes: values.attributes || {},
+          returnPeriodDays: values.returnPeriodDays ?? 14,
         };
         const res = await createProduct(payload);
         message.success(res.data.message);
@@ -434,6 +439,7 @@ const AddNewProduct: React.FC = () => {
         onFinish={handleFinish}
         requiredMark={false}
         disabled={loading}
+        initialValues={{ returnPeriodDays: 14 }}
       >
         <div className="row g-4">
           <div className="col-12 col-lg-8">
@@ -490,6 +496,23 @@ const AddNewProduct: React.FC = () => {
                       open={false}
                     />
                   </Form.Item>
+
+                  <div className="row">
+                    <div className="col-12 col-md-6">
+                      <Form.Item
+                        label="Return Period (days)"
+                        name="returnPeriodDays"
+                        extra="Days after delivery a customer can request a return"
+                      >
+                        <InputNumber
+                          min={0}
+                          placeholder="14"
+                          className="custom-form-input w-100"
+                          size="large"
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
 
                   <Form.Item label="Product Description" name="description">
                     <Input.TextArea

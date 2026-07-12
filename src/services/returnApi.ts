@@ -3,6 +3,7 @@ import axiosInstance from "./axiosInstance";
 export type ReturnStatus =
   | "pending"
   | "approved"
+  | "received"
   | "rejected"
   | "processing"
   | "refunded";
@@ -22,6 +23,7 @@ export interface ReturnRefundInfo {
   method?: "razorpay" | "manual" | "";
   razorpayRefundId?: string;
   amount?: number;
+  status?: "pending" | "processed";
   at?: string | null;
 }
 
@@ -84,6 +86,9 @@ export const approveReturn = (id: string, note?: string) =>
 
 export const rejectReturn = (id: string, note?: string) =>
   axiosInstance.patch<ReturnDetailResponse>(`/returns/admin/${id}/reject`, { note });
+
+export const markReceived = (id: string, note?: string) =>
+  axiosInstance.patch<ReturnDetailResponse>(`/returns/admin/${id}/received`, { note });
 
 export const refundReturn = (
   id: string,
