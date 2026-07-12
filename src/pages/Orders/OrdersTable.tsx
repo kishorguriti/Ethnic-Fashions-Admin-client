@@ -1,34 +1,97 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Table, Tag, Button, message } from 'antd';
 import { EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { getAdminOrders, type AdminOrder } from '../../services/orderApi';
+import OrderDetailModal from './OrderDetailModal';
 
 // TypeScript schema defining structure matching data items in the image
 interface OrderRecord {
   key: string;
+  id: string; // raw DB _id, used for detail/actions
   orderId: string;
   customerName: string;
   customerEmail: string;
   date: string;
   itemsCount: number;
   paymentStatus: 'Paid' | 'Pending';
-  orderStatus: 'Delivered' | 'Processing' | 'Shipped' | 'Pending' | 'Cancelled';
+  orderStatus: 'Delivered' | 'Processing' | 'Shipped' | 'Pending' | 'Cancelled' | 'Returned';
   amount: number;
 }
 
-const OrdersTable: React.FC = () => {
-  // Dynamic mock state pre-filled with values from your image asset
-  const [orders, setOrders] = useState<OrderRecord[]>([
-    { key: '1', orderId: 'ORD-2451', customerName: 'Priya Sharma', customerEmail: 'priya@example.com', date: 'Mar 5, 2026', itemsCount: 3, paymentStatus: 'Paid', orderStatus: 'Delivered', amount: 8450 },
-    { key: '2', orderId: 'ORD-2450', customerName: 'Ananya Reddy', customerEmail: 'ananya@example.com', date: 'Mar 5, 2026', itemsCount: 2, paymentStatus: 'Paid', orderStatus: 'Processing', amount: 12300 },
-    { key: '3', orderId: 'ORD-2449', customerName: 'Meera Patel', customerEmail: 'meera@example.com', date: 'Mar 4, 2026', itemsCount: 1, paymentStatus: 'Paid', orderStatus: 'Shipped', amount: 5680 },
-    { key: '4', orderId: 'ORD-2448', customerName: 'Kavita Singh', customerEmail: 'kavita@example.com', date: 'Mar 4, 2026', itemsCount: 4, paymentStatus: 'Pending', orderStatus: 'Pending', amount: 9200 },
-    { key: '5', orderId: 'ORD-2447', customerName: 'Deepa Kumar', customerEmail: 'deepa@example.com', date: 'Mar 3, 2026', itemsCount: 2, paymentStatus: 'Paid', orderStatus: 'Delivered', amount: 15750 },
-    { key: '6', orderId: 'ORD-2446', customerName: 'Riya Kapoor', customerEmail: 'riya@example.com', date: 'Mar 3, 2026', itemsCount: 1, paymentStatus: 'Paid', orderStatus: 'Cancelled', amount: 3200 }
-  ]);
+interface OrdersTableProps {
+  search?: string;
+  statusFilter?: string; // lowercase API status enum, or undefined for all
+}
 
-  const handleViewOrder = (orderId: string) => {
-    message.info(`Opening overview statement for ${orderId}`);
+// Map raw order status enum to the existing display label set.
+const mapOrderStatus = (status: AdminOrder['status']): OrderRecord['orderStatus'] => {
+  switch (status) {
+    case 'confirmed':
+      return 'Processing'; // UI has no Confirmed tag — treat as Processing
+    case 'processing':
+      return 'Processing';
+    case 'shipped':
+      return 'Shipped';
+    case 'delivered':
+      return 'Delivered';
+    case 'cancelled':
+      return 'Cancelled';
+    case 'returned':
+      return 'Returned';
+    case 'pending':
+    default:
+      return 'Pending';
+  }
+};
+
+const OrdersTable: React.FC<OrdersTableProps> = ({ search, statusFilter }) => {
+  const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
+
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getAdminOrders({
+        page: 1,
+        limit: 50,
+        search: search || undefined,
+        status: statusFilter || undefined,
+      });
+      const mapped: OrderRecord[] = res.data.data.orders.map((o) => ({
+        key: o._id,
+        id: o._id,
+        orderId: o.orderNumber,
+        customerName: o.customerName,
+        customerEmail: o.customerEmail,
+        date: new Date(o.createdAt).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        }),
+        itemsCount: o.items.length,
+        paymentStatus: o.payment?.status === 'paid' ? 'Paid' : 'Pending',
+        orderStatus: mapOrderStatus(o.status),
+        amount: o.total,
+      }));
+      setOrders(mapped);
+    } catch {
+      message.error('Failed to load orders.');
+    } finally {
+      setLoading(false);
+    }
+  }, [search, statusFilter]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const handleViewOrder = (id: string) => {
+    setActiveOrderId(id);
+    setModalOpen(true);
   };
 
   const handleDownloadInvoice = (orderId: string) => {
@@ -124,15 +187,15 @@ const OrdersTable: React.FC = () => {
       align: 'right',
       render: (_, record) => (
         <div className="actions-wrapper-strip d-inline-flex align-items-center gap-2">
-          <Button 
-            icon={<EyeOutlined />} 
+          <Button
+            icon={<EyeOutlined />}
             className="btn-action-view d-inline-flex align-items-center justify-content-center"
-            onClick={() => handleViewOrder(record.orderId)}
+            onClick={() => handleViewOrder(record.id)}
           >
             View
           </Button>
-          <Button 
-            icon={<DownloadOutlined />} 
+          <Button
+            icon={<DownloadOutlined />}
             className="btn-action-download d-inline-flex align-items-center justify-content-center"
             type="text"
             onClick={() => handleDownloadInvoice(record.orderId)}
@@ -147,10 +210,17 @@ const OrdersTable: React.FC = () => {
       <Table
         columns={columns}
         dataSource={orders}
+        loading={loading}
         pagination={false}
         scroll={{ x: "max-content" }}
         className="custom-orders-data-grid"
         // responsive={true}
+      />
+      <OrderDetailModal
+        open={modalOpen}
+        orderId={activeOrderId}
+        onClose={() => setModalOpen(false)}
+        onUpdated={fetchOrders}
       />
     </div>
   );
