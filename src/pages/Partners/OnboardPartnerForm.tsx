@@ -39,7 +39,7 @@ const OnboardPartnerForm: React.FC<OnboardPartnerFormProps> = ({ open, onClose, 
       className="onboard-partner-modal-override"
     >
       <Form form={form} layout="vertical" requiredMark={false} onFinish={handleFinish} autoComplete="off">
-        <Divider orientation="left" plain>Account Details</Divider>
+        <Divider titlePlacement="start" plain>Account Details</Divider>
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
@@ -77,7 +77,7 @@ const OnboardPartnerForm: React.FC<OnboardPartnerFormProps> = ({ open, onClose, 
           </Col>
         </Row>
 
-        <Divider orientation="left" plain>Business Details</Divider>
+        <Divider titlePlacement="start" plain>Business Details</Divider>
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
@@ -106,7 +106,7 @@ const OnboardPartnerForm: React.FC<OnboardPartnerFormProps> = ({ open, onClose, 
           <Input.TextArea rows={2} placeholder="Business address" />
         </Form.Item>
 
-        <Divider orientation="left" plain>Bank Details</Divider>
+        <Divider titlePlacement="start" plain>Bank Details</Divider>
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item

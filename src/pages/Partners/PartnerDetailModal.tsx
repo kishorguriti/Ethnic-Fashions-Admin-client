@@ -283,7 +283,7 @@ const PartnerDetailModal: React.FC<PartnerDetailModalProps> = ({
             <Input size="large" />
           </Form.Item>
 
-          <Divider orientation="left" plain>Business Details</Divider>
+          <Divider titlePlacement="start" plain>Business Details</Divider>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label="Business Name" name="businessName" rules={[{ required: true, message: "Please enter the business name" }]}>
@@ -300,7 +300,7 @@ const PartnerDetailModal: React.FC<PartnerDetailModalProps> = ({
             <Input.TextArea rows={2} />
           </Form.Item>
 
-          <Divider orientation="left" plain>Bank Details</Divider>
+          <Divider titlePlacement="start" plain>Bank Details</Divider>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label="Account Holder Name" name={["bankDetails", "accountHolderName"]} rules={[{ required: true, message: "Please enter the account holder name" }]}>
