@@ -20,23 +20,3 @@ export const resendLoginOtpAPI = (email: string) =>
   });
 
 export const logoutAPI = () => axiosInstance.post("/auth/logout");
-
-// ─── Forgot password ──────────────────────────────────────────────────────────
-
-// Always resolves 200 regardless of whether the email exists — the server
-// deliberately gives no signal either way, so the UI must not imply one.
-export const forgotPasswordAPI = (email: string) =>
-  axiosInstance.post<{ success: boolean; message: string }>(
-    "/admin/forgot-password",
-    { email },
-  );
-
-export const resetPasswordAPI = (data: {
-  email: string;
-  otp: string;
-  newPassword: string;
-}) =>
-  axiosInstance.post<{ success: boolean; message: string }>(
-    "/admin/reset-password",
-    data,
-  );

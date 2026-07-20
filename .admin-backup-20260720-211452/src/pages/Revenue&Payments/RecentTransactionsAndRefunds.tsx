@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Table, Tag, message, Input } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { Table, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { getTransactions, getRefunds } from "../../services/revenueApi";
 
@@ -34,36 +33,17 @@ interface RefundRecord {
   amount: number;
 }
 
-const PAGE_SIZE = 10;
-
 const FinancialLedgers: React.FC = () => {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [refunds, setRefunds] = useState<RefundRecord[]>([]);
   const [txLoading, setTxLoading] = useState<boolean>(false);
   const [refundLoading, setRefundLoading] = useState<boolean>(false);
 
-  const [txSearch, setTxSearch] = useState<string>("");
-  const [txSearchDebounced, setTxSearchDebounced] = useState<string>("");
-  const [txPage, setTxPage] = useState<number>(1);
-  const [txTotal, setTxTotal] = useState<number>(0);
-  const [refundPage, setRefundPage] = useState<number>(1);
-  const [refundTotal, setRefundTotal] = useState<number>(0);
-
-  // Debounced so typing doesn't fire a request per keystroke.
   useEffect(() => {
-    const t = setTimeout(() => { setTxSearchDebounced(txSearch); setTxPage(1); }, 350);
-    return () => clearTimeout(t);
-  }, [txSearch]);
-
-  const loadTransactions = useCallback(async () => {
+    (async () => {
       setTxLoading(true);
       try {
-        const res = await getTransactions({
-          page: txPage,
-          limit: PAGE_SIZE,
-          search: txSearchDebounced || undefined,
-        });
-        setTxTotal(res.data.data.total);
+        const res = await getTransactions({ page: 1, limit: 10 });
         setTransactions(
           res.data.data.transactions.map((t) => ({
             key: t._id,
@@ -81,13 +61,12 @@ const FinancialLedgers: React.FC = () => {
       } finally {
         setTxLoading(false);
       }
-  }, [txPage, txSearchDebounced]);
+    })();
 
-  const loadRefunds = useCallback(async () => {
+    (async () => {
       setRefundLoading(true);
       try {
-        const res = await getRefunds({ page: refundPage, limit: PAGE_SIZE });
-        setRefundTotal(res.data.data.total);
+        const res = await getRefunds({ page: 1, limit: 10 });
         setRefunds(
           res.data.data.refunds.map((r) => ({
             key: r.refundId,
@@ -104,10 +83,8 @@ const FinancialLedgers: React.FC = () => {
       } finally {
         setRefundLoading(false);
       }
-  }, [refundPage]);
-
-  useEffect(() => { loadTransactions(); }, [loadTransactions]);
-  useEffect(() => { loadRefunds(); }, [loadRefunds]);
+    })();
+  }, []);
 
   // Shared routine layout helper splitting text identifiers across multiple rows
   const renderSplitOrderId = (id: string) => {
@@ -246,31 +223,15 @@ const FinancialLedgers: React.FC = () => {
     <div className="financial-ledgers-wrapper container-fluid p-0 d-flex flex-column gap-4 mt-4">
       {/* LEDGER BOARD A: Recent Transactions Data Card Grid Component */}
       <div className="ledger-surface-card bg-white border p-4 rounded-3">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
-          <h3 className="ledger-card-heading mb-0">Recent Transactions</h3>
-          <Input
-            placeholder="Search order, customer, phone or payment ID..."
-            prefix={<SearchOutlined className="text-muted" />}
-            allowClear
-            value={txSearch}
-            onChange={(e) => setTxSearch(e.target.value)}
-            className="ledger-search-input"
-            style={{ maxWidth: 340 }}
-          />
-        </div>
+        <h3 className="ledger-card-heading mb-4">Recent Transactions</h3>
         <Table
           columns={transactionColumns}
           dataSource={transactions}
           loading={txLoading}
-          pagination={{
-            current: txPage,
-            total: txTotal,
-            pageSize: PAGE_SIZE,
-            showSizeChanger: false,
-            onChange: (page) => setTxPage(page),
-          }}
+          pagination={false}
           scroll={{ x: "max-content" }}
           className="custom-financial-table"
+          //   responsive={true}
         />
       </div>
 
@@ -281,15 +242,10 @@ const FinancialLedgers: React.FC = () => {
           columns={refundColumns}
           dataSource={refunds}
           loading={refundLoading}
-          pagination={{
-            current: refundPage,
-            total: refundTotal,
-            pageSize: PAGE_SIZE,
-            showSizeChanger: false,
-            onChange: (page) => setRefundPage(page),
-          }}
+          pagination={false}
           scroll={{ x: "max-content" }}
           className="custom-financial-table"
+          //   responsive={true}
         />
       </div>
     </div>
