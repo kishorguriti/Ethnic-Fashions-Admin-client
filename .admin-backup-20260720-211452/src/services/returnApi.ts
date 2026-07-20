@@ -35,8 +35,6 @@ export interface AdminReturn {
   items: ReturnItem[];
   reason: string;
   reasonText?: string;
-  /** Photos the customer attached as evidence (Cloudinary URLs). */
-  customerImages?: string[];
   type: "return" | "exchange";
   amount: number;
   status: ReturnStatus;

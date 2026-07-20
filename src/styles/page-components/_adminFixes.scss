@@ -1,0 +1,145 @@
+// Styles for the screens added/reworked by update-2-admin-fixes.sh.
+
+$af-primary: #8e2de2;
+$af-border: #eef2f6;
+$af-surface: #fafafa;
+$af-muted: #6b7280;
+
+// ─── Return review: evidence panel ──────────────────────────────────────────
+.return-evidence {
+  .evidence-heading {
+    font-size: 0.9rem;
+    color: #111827;
+  }
+
+  .evidence-item {
+    background: $af-surface;
+    border-color: $af-border !important;
+    transition: border-color 0.2s ease;
+
+    &:hover { border-color: rgba($af-primary, 0.35) !important; }
+  }
+
+  .evidence-thumb-empty {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: #f0f0f0;
+    flex-shrink: 0;
+  }
+
+  .evidence-customer-grid img { border: 1px solid $af-border; }
+
+  .evidence-empty {
+    background: $af-surface;
+    border: 1px dashed #dfe3e8;
+    border-radius: 12px;
+  }
+
+  .evidence-note-body {
+    background: $af-surface;
+    border: 1px solid $af-border;
+    color: #374151;
+    white-space: pre-wrap;
+  }
+}
+
+.return-review-modal,
+.return-detail-modal {
+  .ant-modal-body { max-height: 68vh; overflow-y: auto; }
+}
+
+// Flags a row whose customer attached photos.
+.evidence-flag {
+  background: rgba($af-primary, 0.08);
+  border-color: rgba($af-primary, 0.2);
+  color: $af-primary;
+  font-size: 0.72rem;
+}
+
+// ─── Orders: status dropdown ────────────────────────────────────────────────
+.order-status-select-wrap {
+  .ant-select-selector { min-height: 40px !important; }
+}
+
+.order-flow-hint {
+  padding: 8px 12px;
+  background: $af-surface;
+  border: 1px solid $af-border;
+  border-radius: 8px;
+}
+
+// ─── Transactions search ────────────────────────────────────────────────────
+.ledger-search-input .ant-input-affix-wrapper,
+.ledger-search-input { border-radius: 10px; }
+
+// ─── My Profile ─────────────────────────────────────────────────────────────
+.my-profile-page {
+  .profile-surface-card {
+    border-color: $af-border !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    border-radius: 16px !important;
+  }
+
+  .profile-avatar {
+    background: linear-gradient(135deg, #a800e6 0%, #ff007f 100%);
+  }
+
+  .profile-name { font-weight: 600; }
+
+  .profile-role-pill {
+    background: rgba($af-primary, 0.08);
+    border-color: rgba($af-primary, 0.2);
+    color: $af-primary;
+    border-radius: 999px;
+    padding-inline: 12px;
+  }
+
+  .profile-block-title {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .profile-meta { color: #374151; }
+}
+
+// ─── Forgot password ────────────────────────────────────────────────────────
+.forgot-password-page {
+  background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
+  padding: 24px;
+
+  .forgot-card {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border: 1px solid $af-border;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  }
+
+  .forgot-title {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .back-to-login {
+    color: $af-muted;
+    text-decoration: none;
+
+    &:hover { color: $af-primary; }
+  }
+}
+
+// ─── Sidebar brand mark ─────────────────────────────────────────────────────
+.brand-logo-img {
+  height: 30px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+// ─── Store settings: defaults section ───────────────────────────────────────
+.settings-defaults-block {
+  border-top: 1px solid $af-border;
+}

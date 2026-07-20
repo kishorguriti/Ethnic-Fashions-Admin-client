@@ -28,6 +28,7 @@ export interface Product {
   tags: string[];
   attributes: Record<string, string | string[]>;
   returnPeriodDays?: number;
+  maxQtyPerOrder?: number;
   approvalStatus: ApprovalStatus;
   isActive: boolean;
   rejectionReason?: string | null;
@@ -86,6 +87,7 @@ export interface CreateProductPayload {
   tags?: string[];
   attributes?: Record<string, string | string[]>;
   returnPeriodDays?: number;
+  maxQtyPerOrder?: number;
 }
 
 export interface UpdateProductPayload {
@@ -95,6 +97,7 @@ export interface UpdateProductPayload {
   tags?: string[];
   attributes?: Record<string, string | string[]>;
   returnPeriodDays?: number;
+  maxQtyPerOrder?: number;
 }
 
 export interface CreateVariantPayload {

@@ -55,7 +55,6 @@ interface ProductFormValues {
   tags?: string[];
   attributes?: Record<string, string | string[]>;
   returnPeriodDays?: number;
-  maxQtyPerOrder?: number;
 }
 
 // Mirrors the customer-facing product gallery: a large main image with a
@@ -108,9 +107,6 @@ const statusColors: Record<string, string> = {
   approved: "green",
   rejected: "red",
 };
-
-// Offered in the Return Period dropdown; anything else counts as "custom".
-const RETURN_PERIOD_PRESETS: number[] = [7, 14, 20];
 
 const AddNewProduct: React.FC = () => {
   const [form] = Form.useForm<ProductFormValues>();
@@ -179,7 +175,6 @@ const AddNewProduct: React.FC = () => {
           tags: p.tags || [],
           attributes,
           returnPeriodDays: p.returnPeriodDays ?? 14,
-          maxQtyPerOrder: p.maxQtyPerOrder ?? 0,
         });
       } catch (err: any) {
         message.error(err?.response?.data?.message || "Failed to load product");
@@ -205,7 +200,6 @@ const AddNewProduct: React.FC = () => {
           tags: values.tags,
           attributes: values.attributes || {},
           returnPeriodDays: values.returnPeriodDays ?? 14,
-          maxQtyPerOrder: values.maxQtyPerOrder ?? 0,
         };
         const res = await updateProduct(product._id, payload);
         message.success(res.data.message);
@@ -219,7 +213,6 @@ const AddNewProduct: React.FC = () => {
           tags: values.tags,
           attributes: values.attributes || {},
           returnPeriodDays: values.returnPeriodDays ?? 14,
-          maxQtyPerOrder: values.maxQtyPerOrder ?? 0,
         };
         const res = await createProduct(payload);
         message.success(res.data.message);
@@ -446,7 +439,7 @@ const AddNewProduct: React.FC = () => {
         onFinish={handleFinish}
         requiredMark={false}
         disabled={loading}
-        initialValues={{ returnPeriodDays: 14, maxQtyPerOrder: 0 }}
+        initialValues={{ returnPeriodDays: 14 }}
       >
         <div className="row g-4">
           <div className="col-12 col-lg-8">
@@ -507,77 +500,13 @@ const AddNewProduct: React.FC = () => {
                   <div className="row">
                     <div className="col-12 col-md-6">
                       <Form.Item
-                        label="Return Period"
+                        label="Return Period (days)"
+                        name="returnPeriodDays"
                         extra="Days after delivery a customer can request a return"
-                      >
-                        {/* The value lives in returnPeriodDays; this pair of
-                            controls is just a friendlier way to set it. Anything
-                            outside the presets flips it to a free-entry box. */}
-                        <Form.Item
-                          noStyle
-                          shouldUpdate={(prev, cur) =>
-                            prev.returnPeriodDays !== cur.returnPeriodDays
-                          }
-                        >
-                          {() => {
-                            const days = form.getFieldValue("returnPeriodDays") ?? 14;
-                            const isPreset = RETURN_PERIOD_PRESETS.includes(days);
-                            return (
-                              <div className="d-flex gap-2">
-                                <Select
-                                  size="large"
-                                  className="flex-grow-1"
-                                  value={isPreset ? days : "custom"}
-                                  onChange={(v) =>
-                                    form.setFieldsValue({
-                                      returnPeriodDays: v === "custom" ? 0 : Number(v),
-                                    })
-                                  }
-                                  options={[
-                                    ...RETURN_PERIOD_PRESETS.map((d) => ({
-                                      value: d,
-                                      label: `${d} days`,
-                                    })),
-                                    { value: "custom", label: "Custom…" },
-                                  ]}
-                                />
-                                {!isPreset && (
-                                  <InputNumber
-                                    min={0}
-                                    max={365}
-                                    size="large"
-                                    style={{ width: 150 }}
-                                    value={days}
-                                    addonAfter="days"
-                                    onChange={(v) =>
-                                      form.setFieldsValue({
-                                        returnPeriodDays: Number(v ?? 0),
-                                      })
-                                    }
-                                  />
-                                )}
-                              </div>
-                            );
-                          }}
-                        </Form.Item>
-                      </Form.Item>
-
-                      {/* The real field — kept in the form, driven by the above. */}
-                      <Form.Item name="returnPeriodDays" hidden>
-                        <InputNumber />
-                      </Form.Item>
-                    </div>
-
-                    <div className="col-12 col-md-6">
-                      <Form.Item
-                        label="Max quantity per order"
-                        name="maxQtyPerOrder"
-                        extra="Stops one buyer clearing the shelf. 0 uses the store-wide default."
                       >
                         <InputNumber
                           min={0}
-                          max={1000}
-                          placeholder="0"
+                          placeholder="14"
                           className="custom-form-input w-100"
                           size="large"
                         />

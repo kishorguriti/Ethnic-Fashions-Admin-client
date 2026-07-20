@@ -3,8 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 // import ProductCollection from "../features/products/ProductCollection";
 import Login from "../auth/Login";
-import ForgotPassword from "../auth/ForgotPassword";
-import MyProfile from "../pages/Profile/MyProfile";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Layout from "../layout/AdminLayout";
 import ProductsTable from "../pages/Product/ProductsTable";
@@ -50,7 +48,6 @@ export default function AppRoutes() {
           />
           <Route path="analytics" element={<AnalyticsDashboard />} />
           <Route path="settings" element={<StoreSettings />} />
-          <Route path="profile" element={<MyProfile />} />
           <Route path="notifications" element={<NotificationManagement />} />
           <Route path="content-management" element={<ContentManagement />} />
           <Route path="partners" element={<PartnersTable />} />
@@ -58,7 +55,6 @@ export default function AppRoutes() {
         </Route>
       </Route>
       <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
     </Routes>
   );
 }

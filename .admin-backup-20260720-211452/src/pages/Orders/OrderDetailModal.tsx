@@ -61,47 +61,6 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
   { value: "returned", label: "Returned" },
 ];
 
-/**
- * Which statuses may legally follow the current one.
- *
- * The dropdown previously offered all ten values at every stage, so a delivered
- * order could be sent back to Pending and any order at all could be marked
- * Returned. The server now rejects the illegitimate ones; showing them as
- * disabled here means the operator understands the workflow instead of
- * discovering it through an error toast.
- *
- * The return_* states are deliberately unreachable from this dropdown — they are
- * driven by the Returns & Refunds screen, which is where the evidence lives.
- */
-const ALLOWED_NEXT: Record<string, OrderStatus[]> = {
-  pending:          ["confirmed", "processing", "cancelled"],
-  confirmed:        ["processing", "shipped", "cancelled"],
-  processing:       ["shipped", "cancelled"],
-  shipped:          ["delivered"],
-  delivered:        [],
-  cancelled:        [],
-  return_requested: [],
-  return_approved:  ["returned"],
-  return_received:  ["returned"],
-  returned:         [],
-};
-
-// Why a given target is unavailable — shown in the dropdown so the rule is
-// explained at the point of confusion.
-const blockedReason = (current: string, target: OrderStatus): string => {
-  if (target === current) return "Current status";
-  if (target === "returned") {
-    return "Approve the return under Returns & Refunds first";
-  }
-  if (["return_requested", "return_approved", "return_received"].includes(target)) {
-    return "Managed from the Returns & Refunds screen";
-  }
-  if (["delivered", "cancelled", "returned"].includes(current)) {
-    return `An order that is ${current} cannot change status`;
-  }
-  return "Not a valid next step from " + formatOrderStatus(current);
-};
-
 const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   open,
   orderId,
@@ -213,23 +172,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const money = (n: number) => `₹${(n ?? 0).toLocaleString("en-IN")}`;
 
   const itemColumns: ColumnsType<OrderItem> = [
-    {
-      title: "Item",
-      dataIndex: "name",
-      key: "name",
-      render: (name: string, r) => (
-        <div className="d-flex align-items-center gap-2">
-          {r.image ? (
-            <img
-              src={r.image}
-              alt=""
-              style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 6 }}
-            />
-          ) : null}
-          <span>{name}</span>
-        </div>
-      ),
-    },
+    { title: "Item", dataIndex: "name", key: "name" },
     { title: "SKU", dataIndex: "sku", key: "sku" },
     {
       title: "Variant",
@@ -350,26 +293,13 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
             {/* Status update control */}
             <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-end gap-2">
-              <div className="order-status-select-wrap" style={{ minWidth: 280 }}>
+              <div style={{ minWidth: 180 }}>
                 <label className="text-muted d-block mb-1">Update Status</label>
                 <Select
                   value={statusValue}
                   onChange={(v) => setStatusValue(v)}
+                  options={STATUS_OPTIONS}
                   style={{ width: "100%" }}
-                  popupMatchSelectWidth={false}
-                  listHeight={340}
-                  optionLabelProp="label"
-                  options={STATUS_OPTIONS.map((opt) => {
-                    const allowed =
-                      opt.value === order.status ||
-                      (ALLOWED_NEXT[order.status] ?? []).includes(opt.value);
-                    return {
-                      value: opt.value,
-                      label: opt.label,
-                      disabled: !allowed,
-                      title: allowed ? opt.label : blockedReason(order.status, opt.value),
-                    };
-                  })}
                 />
               </div>
               <Input
@@ -390,20 +320,6 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   Process Refund
                 </Button>
               )}
-            </div>
-
-            {/* Makes the next legal step explicit rather than something to guess at. */}
-            <div className="order-flow-hint text-muted small mt-2">
-              {(() => {
-                const next = ALLOWED_NEXT[order.status] ?? [];
-                if (order.status === "return_requested") {
-                  return "A return has been requested — approve or reject it under Returns & Refunds.";
-                }
-                if (!next.length) {
-                  return `${formatOrderStatus(order.status)} is a final state — no further status changes are possible.`;
-                }
-                return `Next step: ${next.map(formatOrderStatus).join(" or ")}.`;
-              })()}
             </div>
 
             {/* COD payment collection control */}

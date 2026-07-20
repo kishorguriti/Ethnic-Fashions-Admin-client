@@ -1,14 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Table, Input, Tag, Button, message, Modal, Descriptions, Divider,
-  InputNumber, Form, Image, Empty, Alert,
-} from "antd";
+import { Table, Input, Tag, Button, message, Modal, Descriptions, Divider, InputNumber, Form } from "antd";
 import {
   SearchOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   EyeOutlined,
-  PictureOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import {
@@ -90,100 +86,6 @@ const toRecord = (r: AdminReturn): ReturnRecord => ({
   raw: r,
 });
 
-/**
- * The evidence panel — the whole point of the returns screen.
- *
- * Approving a "damaged on arrival" claim is a judgement call, and it cannot be
- * made from a text label alone. This puts the two sets of photos side by side:
- * what the catalogue promised, and what the customer says arrived.
- */
-const ReturnEvidence: React.FC<{ data: AdminReturn }> = ({ data }) => {
-  const customerImages = data.customerImages ?? [];
-
-  return (
-    <div className="return-evidence">
-      <div className="evidence-block mb-3">
-        <div className="evidence-heading d-flex align-items-center gap-2 mb-2">
-          <PictureOutlined />
-          <span className="fw-semibold">Product as listed</span>
-          <span className="text-muted small">({data.items.length} item{data.items.length === 1 ? "" : "s"})</span>
-        </div>
-
-        <Image.PreviewGroup>
-          <div className="evidence-item-list d-flex flex-column gap-2">
-            {data.items.map((it, idx) => (
-              <div key={idx} className="evidence-item d-flex align-items-center gap-3 p-2 rounded-3 border">
-                {it.image ? (
-                  <Image
-                    src={it.image}
-                    alt={it.name}
-                    width={56}
-                    height={56}
-                    className="evidence-thumb"
-                    style={{ objectFit: "cover", borderRadius: 8 }}
-                  />
-                ) : (
-                  <div className="evidence-thumb-empty d-flex align-items-center justify-content-center">
-                    <PictureOutlined className="text-muted" />
-                  </div>
-                )}
-                <div className="flex-grow-1">
-                  <div className="fw-medium">{it.name}</div>
-                  <div className="text-muted small">
-                    {[it.color, it.size].filter(Boolean).join(" / ") || "—"} · Qty {it.quantity}
-                  </div>
-                </div>
-                <strong>{money(it.lineTotal)}</strong>
-              </div>
-            ))}
-          </div>
-        </Image.PreviewGroup>
-      </div>
-
-      <div className="evidence-block">
-        <div className="evidence-heading d-flex align-items-center gap-2 mb-2">
-          <PictureOutlined />
-          <span className="fw-semibold">Photos from the customer</span>
-          <span className="text-muted small">({customerImages.length})</span>
-        </div>
-
-        {customerImages.length ? (
-          <Image.PreviewGroup>
-            <div className="evidence-customer-grid d-flex flex-wrap gap-2">
-              {customerImages.map((url, idx) => (
-                <Image
-                  key={idx}
-                  src={url}
-                  alt={`Customer photo ${idx + 1}`}
-                  width={96}
-                  height={96}
-                  style={{ objectFit: "cover", borderRadius: 10 }}
-                />
-              ))}
-            </div>
-          </Image.PreviewGroup>
-        ) : (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="The customer did not attach any photos"
-            className="evidence-empty py-2 m-0"
-          />
-        )}
-      </div>
-
-      {data.reasonText && (
-        <>
-          <Divider className="my-3" />
-          <div className="evidence-note">
-            <div className="text-muted small mb-1">Customer's note</div>
-            <div className="evidence-note-body p-3 rounded-3">{data.reasonText}</div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
 const ReturnsRefundsSummary: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -195,11 +97,6 @@ const ReturnsRefundsSummary: React.FC = () => {
 
   // Detail modal
   const [detail, setDetail] = useState<AdminReturn | null>(null);
-
-  // Review modal — approve or reject, with the evidence visible.
-  const [review, setReview] = useState<{ data: AdminReturn; mode: "approve" | "reject" } | null>(null);
-  const [reviewLoading, setReviewLoading] = useState<boolean>(false);
-  const [reviewNote, setReviewNote] = useState<string>("");
 
   // Refund modal
   const [refundTarget, setRefundTarget] = useState<AdminReturn | null>(null);
@@ -235,30 +132,24 @@ const ReturnsRefundsSummary: React.FC = () => {
 
   const refreshAll = () => { loadReturns(); loadStats(); };
 
-  const openReview = (data: AdminReturn, mode: "approve" | "reject") => {
-    setReviewNote("");
-    setReview({ data, mode });
-  };
-
-  const submitReview = async () => {
-    if (!review) return;
-    const { data, mode } = review;
-    setReviewLoading(true);
-    try {
-      if (mode === "approve") {
-        await approveReturn(data._id, reviewNote || undefined);
-        message.success(`Request ${data.returnNumber} has been approved.`);
-      } else {
-        await rejectReturn(data._id, reviewNote || undefined);
-        message.warning(`Request ${data.returnNumber} has been rejected.`);
-      }
-      setReview(null);
-      refreshAll();
-    } catch (err: any) {
-      message.error(err?.response?.data?.message || `Failed to ${mode} return.`);
-    } finally {
-      setReviewLoading(false);
-    }
+  const handleApprove = (id: string, returnId: string) => {
+    Modal.confirm({
+      title: "Approve this return request?",
+      icon: <CheckCircleOutlined className="text-success" />,
+      content: `Return ${returnId} will be marked as approved and the customer notified to ship the product back.`,
+      okText: "Approve",
+      cancelText: "Cancel",
+      async onOk() {
+        setActioningKey(id);
+        try {
+          await approveReturn(id);
+          message.success(`Request ${returnId} has been approved.`);
+          refreshAll();
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || "Failed to approve return.");
+        } finally { setActioningKey(null); }
+      },
+    });
   };
 
   const handleMarkReceived = async (id: string, returnId: string) => {
@@ -273,8 +164,37 @@ const ReturnsRefundsSummary: React.FC = () => {
   };
 
   const promptProcessRefund = (record: ReturnRecord) => {
-    setRefundTarget(record.raw);
-    refundForm.setFieldsValue({ amount: record.amount });
+    Modal.confirm({
+      title: "Trigger automatic Razorpay refund?",
+      content:
+        "This initiates an instant Razorpay refund of the return amount to the customer's original payment method. You can review or adjust the amount before confirming.",
+      okText: "Continue",
+      cancelText: "Cancel",
+      onOk() {
+        setRefundTarget(record.raw);
+        refundForm.setFieldsValue({ amount: record.amount });
+      },
+    });
+  };
+
+  const handleReject = (id: string, returnId: string) => {
+    Modal.confirm({
+      title: `Reject Return Request ${returnId}?`,
+      icon: <CloseCircleOutlined className="text-danger" />,
+      content: "Are you sure you want to decline this customer refund claim submission?",
+      okText: "Reject Request",
+      okType: "danger",
+      cancelText: "Cancel",
+      async onOk() {
+        try {
+          await rejectReturn(id);
+          message.warning(`Request ${returnId} has been rejected.`);
+          refreshAll();
+        } catch (err: any) {
+          message.error(err?.response?.data?.message || "Failed to reject return.");
+        }
+      },
+    });
   };
 
   const handleProcessRefund = async () => {
@@ -300,28 +220,7 @@ const ReturnsRefundsSummary: React.FC = () => {
     { title: "Return ID", dataIndex: "returnId", key: "returnId", render: (id) => <span className="return-id-highlight fw-bold">{id}</span> },
     { title: "Order ID", dataIndex: "orderId", key: "orderId", render: (id) => <span className="order-id-txt text-secondary">{id}</span> },
     { title: "Customer", dataIndex: "customer", key: "customer", render: (text) => <span className="customer-txt text-dark fw-medium">{text}</span> },
-    {
-      // Thumbnail in the row, so the list itself is scannable.
-      title: "Product", dataIndex: "product", key: "product",
-      render: (text, record) => (
-        <div className="d-flex align-items-center gap-2">
-          {record.raw.items?.[0]?.image ? (
-            <img
-              src={record.raw.items[0].image}
-              alt=""
-              className="row-thumb"
-              style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 6 }}
-            />
-          ) : null}
-          <span className="product-txt text-secondary">{text}</span>
-          {(record.raw.customerImages?.length ?? 0) > 0 && (
-            <Tag className="evidence-flag" title="Customer attached photos">
-              <PictureOutlined /> {record.raw.customerImages!.length}
-            </Tag>
-          )}
-        </div>
-      ),
-    },
+    { title: "Product", dataIndex: "product", key: "product", render: (text) => <span className="product-txt text-secondary">{text}</span> },
     { title: "Date", dataIndex: "date", key: "date", render: (text) => <span className="date-txt text-muted">{text}</span> },
     { title: "Reason", dataIndex: "reason", key: "reason", render: (text) => <span className="reason-txt text-secondary">{text}</span> },
     {
@@ -342,15 +241,15 @@ const ReturnsRefundsSummary: React.FC = () => {
                 icon={<CheckCircleOutlined />}
                 loading={actioningKey === record.id}
                 className="btn-action-approve d-inline-flex align-items-center gap-1"
-                onClick={() => openReview(record.raw, "approve")}
+                onClick={() => handleApprove(record.id, record.returnId)}
               >
-                Review
+                Approve
               </Button>
               <Button
                 danger
                 icon={<CloseCircleOutlined />}
                 className="btn-action-reject d-inline-flex align-items-center gap-1"
-                onClick={() => openReview(record.raw, "reject")}
+                onClick={() => handleReject(record.id, record.returnId)}
               >
                 Reject
               </Button>
@@ -413,10 +312,9 @@ const ReturnsRefundsSummary: React.FC = () => {
       <div className="returns-refunds-table-panel pb-4 w-100 mt-4">
         <div className="filter-toolbar p-3 mb-4 bg-white rounded-3 border">
           <Input
-            placeholder="Search by return ID, order ID or customer..."
+            placeholder="Search by return ID or order ID..."
             prefix={<SearchOutlined className="search-icon-dimmed" />}
             className="search-input-field"
-            allowClear
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
           />
@@ -451,96 +349,34 @@ const ReturnsRefundsSummary: React.FC = () => {
         </div>
       </div>
 
-      {/* Review modal — approve / reject with the evidence in view */}
-      <Modal
-        open={!!review}
-        title={
-          review
-            ? `${review.mode === "approve" ? "Approve" : "Reject"} return — ${review.data.returnNumber}`
-            : ""
-        }
-        width={720}
-        okText={review?.mode === "approve" ? "Approve return" : "Reject return"}
-        okButtonProps={{ danger: review?.mode === "reject", loading: reviewLoading }}
-        onOk={submitReview}
-        onCancel={() => setReview(null)}
-        destroyOnHidden
-        className="return-review-modal"
-      >
-        {review && (
-          <div className="return-review-body">
-            <Descriptions size="small" column={2} className="mb-3" items={[
-              { key: "order", label: "Order", children: review.data.orderNumber },
-              { key: "customer", label: "Customer", children: review.data.customerName },
-              { key: "reason", label: "Reason", children: <Tag>{review.data.reason}</Tag> },
-              { key: "amount", label: "Refund amount", children: <strong>{money(review.data.amount)}</strong> },
-            ]} />
-
-            <ReturnEvidence data={review.data} />
-
-            <Divider className="my-3" />
-
-            {review.mode === "approve" ? (
-              <Alert
-                type="info"
-                showIcon
-                className="mb-3"
-                message="Approving does not move any money"
-                description="This marks the request approved so the customer can ship the item back. The refund is a separate step: mark the product received, then Process Refund."
-              />
-            ) : (
-              <Alert
-                type="warning"
-                showIcon
-                className="mb-3"
-                message="The order returns to Delivered"
-                description="The customer may submit a new request while the return window is still open."
-              />
-            )}
-
-            <label className="text-muted d-block mb-1">
-              Note to the customer {review.mode === "reject" ? "(recommended)" : "(optional)"}
-            </label>
-            <Input.TextArea
-              rows={3}
-              maxLength={500}
-              showCount
-              value={reviewNote}
-              onChange={(e) => setReviewNote(e.target.value)}
-              placeholder={
-                review.mode === "approve"
-                  ? "e.g. Approved — please ship the item back within 7 days"
-                  : "e.g. The photos show normal wear rather than a manufacturing defect"
-              }
-            />
-          </div>
-        )}
-      </Modal>
-
       {/* Detail modal */}
       <Modal
         open={!!detail}
         title={detail ? `Return ${detail.returnNumber}` : "Return details"}
         footer={null}
         onCancel={() => setDetail(null)}
-        width={720}
-        destroyOnHidden
-        className="return-detail-modal"
+        width={640}
+        destroyOnClose
       >
         {detail && (
           <>
-            <Descriptions size="small" column={2} bordered className="mb-3" items={[
+            <Descriptions size="small" column={2} bordered items={[
               { key: "order", label: "Order", children: detail.orderNumber },
               { key: "customer", label: "Customer", children: detail.customerName },
               { key: "reason", label: "Reason", children: detail.reason },
               { key: "type", label: "Type", children: detail.type },
-              { key: "status", label: "Status", children: <Tag className={`return-status-pill ${statusDisplay(detail).cls}`}>{statusDisplay(detail).label}</Tag> },
+              { key: "status", label: "Status", children: <Tag>{statusDisplay(detail).label}</Tag> },
               { key: "amount", label: "Amount", children: money(detail.amount) },
-              ...(detail.adminNote ? [{ key: "adminNote", label: "Admin note", span: 2, children: detail.adminNote }] : []),
+              ...(detail.reasonText ? [{ key: "note", label: "Customer note", span: 2, children: detail.reasonText }] : []),
               ...(detail.refund?.at ? [{ key: "refund", label: "Refund", span: 2, children: `${money(detail.refund.amount || 0)} via ${detail.refund.method}${detail.refund.razorpayRefundId ? ` (${detail.refund.razorpayRefundId})` : ""}` }] : []),
             ]} />
-
-            <ReturnEvidence data={detail} />
+            <Divider>Items</Divider>
+            {detail.items.map((it, idx) => (
+              <div key={idx} className="d-flex justify-content-between align-items-center mb-2">
+                <span>{it.name} — {[it.color, it.size].filter(Boolean).join(" / ")} × {it.quantity}</span>
+                <strong>{money(it.lineTotal)}</strong>
+              </div>
+            ))}
           </>
         )}
       </Modal>
@@ -549,19 +385,12 @@ const ReturnsRefundsSummary: React.FC = () => {
       <Modal
         open={!!refundTarget}
         title={refundTarget ? `Process Refund — ${refundTarget.returnNumber}` : "Process Refund"}
-        okText="Send refund"
+        okText="Refund"
         okButtonProps={{ danger: true, loading: refundLoading }}
         onCancel={() => { setRefundTarget(null); refundForm.resetFields(); }}
         onOk={handleProcessRefund}
-        destroyOnHidden
+        destroyOnClose
       >
-        <Alert
-          type="info"
-          showIcon
-          className="mb-3"
-          message="This sends a real refund to Razorpay"
-          description="The amount is credited to the customer's original payment method. Until this step runs, no money has moved — approving a return alone does not refund anything."
-        />
         <Form form={refundForm} layout="vertical">
           <Form.Item name="amount" label="Amount (₹)">
             <InputNumber min={1} style={{ width: "100%" }} placeholder="Refund amount" />

@@ -50,15 +50,11 @@ const Layout: React.FC = () => {
   const adminMenuProps: MenuProps = {
     items: [
       { key: "profile", label: "My Profile" },
-      { key: "settings", label: "Store Settings" },
+      { key: "settings", label: "Account Settings" },
       { type: "divider" },
       { key: "logout", label: "Logout", danger: true },
     ],
     onClick: async ({ key }) => {
-      if (key === "profile") {
-        navigate("/profile");
-        return;
-      }
       if (key === "logout") {
         await dispatch(logoutUser());
         navigate("/login");

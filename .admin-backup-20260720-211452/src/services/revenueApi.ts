@@ -71,15 +71,7 @@ interface RefundsResponse {
 export const getRevenueSummary = () =>
   axiosInstance.get<RevenueSummaryResponse>("/orders/admin/revenue/summary");
 
-export const getTransactions = (params?: {
-  page?: number;
-  limit?: number;
-  search?: string;
-  method?: string;
-  status?: string;
-  from?: string;
-  to?: string;
-}) =>
+export const getTransactions = (params?: { page?: number; limit?: number }) =>
   axiosInstance.get<TransactionsResponse>(
     "/orders/admin/revenue/transactions",
     { params },

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Checkbox, Button, Alert, Steps, message } from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { loginUser, verifyOtp, resendOtp, resetOtpStep } from "./authSlice";
 
@@ -51,6 +51,7 @@ const AdminLogin: React.FC = () => {
       await dispatch(
         verifyOtp({ email: otpStep!.email, otp: values.otp }),
       ).unwrap();
+      message.success("Login successful! Redirecting...");
       navigate("/");
     } catch (error) {
       message.error(typeof error === "string" ? error : "Invalid OTP. Please try again.");
@@ -142,9 +143,13 @@ const AdminLogin: React.FC = () => {
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox className="remember-me">Remember me</Checkbox>
               </Form.Item>
-              <Link to="/forgot-password" className="forgot-link">
+              <a
+                href="#forgot"
+                className="forgot-link"
+                onClick={(e) => e.preventDefault()}
+              >
                 Forgot password?
-              </Link>
+              </a>
             </div>
 
             {/* Submit Sign In Button */}
